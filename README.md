@@ -1,3 +1,0 @@
-# ClimateApp
-
-Climate change app
