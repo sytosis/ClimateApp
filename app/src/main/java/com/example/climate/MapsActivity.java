@@ -87,14 +87,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng brisbane = new LatLng(-33, 129);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
+
         try {
             JSONObject beijing = readJsonFromUrl("https://api.waqi.info/feed/beijing/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-            JSONObject beijing2 = beijing.getJSONObject("data");
-            JSONObject beijing3 = beijing2.getJSONObject("city");
-            String[] geoloc = beijing3.get("geo").toString().split(",",2);
-            geoloc[0] = geoloc[0].replaceAll("[^0-9]","");
-            geoloc[1] = geoloc[1].replaceAll("[^0-9]","");
-            mMap.addMarker(new MarkerOptions().position(brisbane).title(geoloc[1]));
+            String[] beijingLoc = beijing.getJSONObject("data").getJSONObject("city").get("geo").toString().split(",",2);;
+            beijingLoc[0] = beijingLoc[0].replace("[","");
+            beijingLoc[1] = beijingLoc[1].replace("]","");
+            LatLng beijingMark = new LatLng(Double.parseDouble(beijingLoc[0]),Double.parseDouble(beijingLoc[1]));
+            mMap.addMarker(new MarkerOptions().position(beijingMark).title(beijingLoc[1]));
+            mMap.addMarker(new MarkerOptions().position(brisbane).title(beijingLoc[1]));
         } catch (IOException | JSONException e) {
                 System.err.println(e);
         }
