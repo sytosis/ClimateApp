@@ -81,23 +81,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
+        // Add a location on the map
         LatLng sydney = new LatLng(-34, 151);
         //Adds the marker
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney")).showInfoWindow();
         LatLng brisbane = new LatLng(-33, 129);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
 
         try {
             JSONObject beijing = readJsonFromUrl("https://api.waqi.info/feed/beijing/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-            String[] beijingLoc = beijing.getJSONObject("data").getJSONObject("city").get("geo").toString().split(",",2);;
+            String[] beijingLoc = beijing.getJSONObject("data").getJSONObject("city").get("geo").toString().split(",",2);
             beijingLoc[0] = beijingLoc[0].replace("[","");
             beijingLoc[1] = beijingLoc[1].replace("]","");
             LatLng beijingMark = new LatLng(Double.parseDouble(beijingLoc[0]),Double.parseDouble(beijingLoc[1]));
-            mMap.addMarker(new MarkerOptions().position(beijingMark).title(beijingLoc[1]));
+            mMap.addMarker(new MarkerOptions().position(beijingMark).title("AQI:" + beijing.getJSONObject("data").get("aqi").toString())).showInfoWindow();
+
             //change this title to test logging
-            mMap.addMarker(new MarkerOptions().position(brisbane).title(beijingLoc[1]));
+            mMap.addMarker(new MarkerOptions().position(brisbane).title(beijingLoc[1])).showInfoWindow();
+
         } catch (IOException | JSONException e) {
                 System.err.println(e);
         }
