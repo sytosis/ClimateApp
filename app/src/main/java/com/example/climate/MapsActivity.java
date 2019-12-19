@@ -83,6 +83,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add a marker in Sydney and move the camera
         LatLng sydney = new LatLng(-34, 151);
+        //Adds the marker
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         LatLng brisbane = new LatLng(-33, 129);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
@@ -95,6 +96,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             beijingLoc[1] = beijingLoc[1].replace("]","");
             LatLng beijingMark = new LatLng(Double.parseDouble(beijingLoc[0]),Double.parseDouble(beijingLoc[1]));
             mMap.addMarker(new MarkerOptions().position(beijingMark).title(beijingLoc[1]));
+            //change this title to test logging
             mMap.addMarker(new MarkerOptions().position(brisbane).title(beijingLoc[1]));
         } catch (IOException | JSONException e) {
                 System.err.println(e);
