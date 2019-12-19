@@ -5,6 +5,7 @@ import androidx.fragment.app.FragmentActivity;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import org.json.*;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -88,7 +89,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         try {
             JSONObject beijing = readJsonFromUrl("https://api.waqi.info/feed/beijing/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-            mMap.addMarker(new MarkerOptions().position(brisbane).title(beijing.get("city").toString()));
+            JSONObject beijing2 = beijing.getJSONObject("data");
+            JSONObject beijing3 = beijing2.getJSONObject("city");
+            String[] geoloc = beijing3.get("geo").toString().split(",",2);
+            geoloc[0] = geoloc[0].replaceAll("[^0-9]","");
+            geoloc[1] = geoloc[1].replaceAll("[^0-9]","");
+            mMap.addMarker(new MarkerOptions().position(brisbane).title(geoloc[1]));
         } catch (IOException | JSONException e) {
                 System.err.println(e);
         }
