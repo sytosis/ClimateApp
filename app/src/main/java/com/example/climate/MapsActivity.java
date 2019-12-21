@@ -88,6 +88,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng brisbane = new LatLng(-33, 129);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
+        googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
+        {
+            @Override
+            public void onMapClick(LatLng arg0)
+            {
+                android.util.Log.i("onMapClick", "Horray!");
+            }
+        });
+
 
         try {
             JSONObject beijing = readJsonFromUrl("https://api.waqi.info/feed/beijing/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
