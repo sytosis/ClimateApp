@@ -12,6 +12,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.BufferedReader;
@@ -30,6 +31,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private double taplat = 0;
     private double taplong = 0;
+    LatLng tapMark;
+    Marker tapMarker;
 
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -95,16 +98,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng arg0)
             {
-                android.util.Log.i("onMapClick", "Horray!"+arg0);
+                android.util.Log.i("onMapClick", "Hooray!"+arg0);
                 taplat = arg0.latitude;
                 taplong = arg0.longitude;
-                android.util.Log.i("lattitude", Double.toString(taplat));
+                android.util.Log.i("latitude", Double.toString(taplat));
 
                 try {
-                    JSONObject tap = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-
-                    LatLng tapMark = new LatLng(taplat,taplong);
-                    mMap.addMarker(new MarkerOptions().position(tapMark).title("AQI:" + tap.getJSONObject("data").get("aqi").toString())).showInfoWindow();
+                    JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+                    if (tapMarker != null) {
+                        tapMarker.remove();
+                    }
+                    tapMark = new LatLng(taplat,taplong);
+                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString() + "AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));
+                    tapMarker.showInfoWindow();
 
                 } catch (IOException | JSONException e) {
                     System.err.println(e);
