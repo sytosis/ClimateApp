@@ -93,7 +93,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng arg0)
             {
-                android.util.Log.i("onMapClick", "Horray!");
+                android.util.Log.i("onMapClick", "Horray!"+arg0);
             }
         });
 
