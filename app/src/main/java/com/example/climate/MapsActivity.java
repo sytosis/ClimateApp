@@ -94,6 +94,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onMapClick(LatLng arg0)
             {
                 android.util.Log.i("onMapClick", "Horray!"+arg0);
+                try {
+                    JSONObject nearMe = readJsonFromUrl("https://api.waqi.info/feed/here/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+                    android.util.Log.i("Location Near me", "Location:"+nearMe.getJSONObject("data").getJSONObject("city").get("name").toString());
+                } catch (IOException | JSONException e) {
+                    System.err.println(e);
+                }
+
             }
         });
 
@@ -104,8 +111,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             beijingLoc[0] = beijingLoc[0].replace("[","");
             beijingLoc[1] = beijingLoc[1].replace("]","");
             LatLng beijingMark = new LatLng(Double.parseDouble(beijingLoc[0]),Double.parseDouble(beijingLoc[1]));
-            mMap.addMarker(new MarkerOptions().position(beijingMark).title("AQI:" + beijing.getJSONObject("data").get("aqi").toString())).showInfoWindow();
-
+            //mMap.addMarker(new MarkerOptions().position(beijingMark).title("AQI:" + beijing.getJSONObject("data").get("aqi").toString())).showInfoWindow();
+            JSONObject nearMe = readJsonFromUrl("https://api.waqi.info/feed/here/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+            mMap.addMarker(new MarkerOptions().position(beijingMark).title("Location:"+nearMe.getJSONObject("data").getJSONObject("city").get("name").toString())).showInfoWindow();
             //change this title to test logging
             mMap.addMarker(new MarkerOptions().position(brisbane).title(beijingLoc[1])).showInfoWindow();
 
