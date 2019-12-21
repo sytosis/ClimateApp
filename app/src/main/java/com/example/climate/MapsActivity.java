@@ -28,6 +28,8 @@ import org.json.JSONObject;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private double taplat = 0;
+    private double taplong = 0;
 
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -94,16 +96,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onMapClick(LatLng arg0)
             {
                 android.util.Log.i("onMapClick", "Horray!"+arg0);
+                taplat = arg0.latitude;
+                taplong = arg0.longitude;
+                android.util.Log.i("lattitude", Double.toString(taplat));
+
                 try {
-                    JSONObject nearMe = readJsonFromUrl("https://api.waqi.info/feed/here/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-                    android.util.Log.i("Location Near me", "Location:"+nearMe.getJSONObject("data").getJSONObject("city").get("name").toString());
+                    JSONObject tap = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+
+                    LatLng tapMark = new LatLng(taplat,taplong);
+                    mMap.addMarker(new MarkerOptions().position(tapMark).title("AQI:" + tap.getJSONObject("data").get("aqi").toString())).showInfoWindow();
+
                 } catch (IOException | JSONException e) {
                     System.err.println(e);
                 }
-
             }
         });
-
+        
 
         try {
             JSONObject beijing = readJsonFromUrl("https://api.waqi.info/feed/beijing/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
