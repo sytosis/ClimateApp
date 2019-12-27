@@ -29,11 +29,10 @@ import org.json.JSONObject;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private double taplat = 0;
-    private double taplong = 0;
     LatLng tapMark;
     Marker tapMarker;
 
+    //reads all the lines on a json
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
         int cp;
@@ -43,6 +42,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return sb.toString();
     }
 
+    //reads the json from a specific URL
     public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
         InputStream is = new URL(url).openStream();
         try {
@@ -93,23 +93,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng brisbane = new LatLng(-33, 129);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
 
+        //Create a new event listener
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
+            //listener on map click
             @Override
             public void onMapClick(LatLng arg0)
             {
+                //prints out the lat and long on debug
                 android.util.Log.i("onMapClick", "Hooray!"+arg0);
-                taplat = arg0.latitude;
-                taplong = arg0.longitude;
-                android.util.Log.i("latitude", Double.toString(taplat));
-
+                //sets lat and long to a variable
+                Double taplat = arg0.latitude;
+                Double taplong = arg0.longitude;
+                //finds the nearest AQI based on lat and long, before adding it to the map
                 try {
                     JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+                    //only remove the previous marker if it exists
                     if (tapMarker != null) {
                         tapMarker.remove();
                     }
                     tapMark = new LatLng(taplat,taplong);
-                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString() + "AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));
+                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString() + " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));
                     tapMarker.showInfoWindow();
 
                 } catch (IOException | JSONException e) {
@@ -120,6 +124,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         
 
         try {
+            //Basic code for creating a marker with AQI info
             JSONObject beijing = readJsonFromUrl("https://api.waqi.info/feed/beijing/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
             String[] beijingLoc = beijing.getJSONObject("data").getJSONObject("city").get("geo").toString().split(",",2);
             beijingLoc[0] = beijingLoc[0].replace("[","");
