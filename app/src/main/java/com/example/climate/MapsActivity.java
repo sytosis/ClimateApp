@@ -11,6 +11,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -88,14 +89,30 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
-                Log.i(TAG, "Place: " + place.getName() + ", " + place.getId());
+                android.util.Log.i("onMapClick", "Got to the first part");
+                //find AQI based on search result
+                LatLng tapMark = place.getLatLng();
+                try {
+                    JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/search/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0&keyword="+place.getName());
+                    //only remove the previous marker if it exists
+                    if (tapMarker != null) {
+                        tapMarker.remove();
+                    }
+                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(place.getName()+ " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));
+                    tapMarker.showInfoWindow();
+
+                } catch (IOException | JSONException e) {
+                    android.util.Log.i("onMapClick", "Error here");
+                }
+                android.util.Log.i("onMapClick", "Got to the second part ");
             }
+
 
             @Override
             public void onError(Status status) {
                 // TODO: Handle the error.
                 Log.i(TAG, "An error occurred: " + status);
+                android.util.Log.i("onMapClick", status + "Error");
             }
         });
     }
@@ -141,7 +158,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         tapMarker.remove();
                     }
                     tapMark = new LatLng(taplat,taplong);
-                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString() + " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));
+                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString() + " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
                     tapMarker.showInfoWindow();
 
                 } catch (IOException | JSONException e) {
