@@ -83,7 +83,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
         // Specify the types of place data to return.
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME));
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME,Place.Field.LAT_LNG));
 
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -91,9 +91,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onPlaceSelected(Place place) {
                 android.util.Log.i("onMapClick", "Got to the first part");
                 //find AQI based on search result
-                LatLng tapMark = place.getLatLng();
+                 tapMark = place.getLatLng();
+                 double taplat = tapMark.latitude;
+                 double taplong = tapMark.longitude;
+                android.util.Log.i("onMapClick", tapMark.toString());
                 try {
-                    JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/search/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0&keyword="+place.getName());
+                    JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
                     //only remove the previous marker if it exists
                     if (tapMarker != null) {
                         tapMarker.remove();
@@ -102,7 +105,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     tapMarker.showInfoWindow();
 
                 } catch (IOException | JSONException e) {
-                    android.util.Log.i("onMapClick", "Error here");
+                    android.util.Log.i("onMapClick", e.toString());
                 }
                 android.util.Log.i("onMapClick", "Got to the second part ");
             }
