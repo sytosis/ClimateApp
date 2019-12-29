@@ -161,10 +161,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         tapMarker.remove();
                     }
                     tapMark = new LatLng(taplat,taplong);
-                    String location = tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString();
+                    JSONObject actualLoc = readJsonFromUrl("https://maps.googleapis.com/maps/api/geocode/json?latlng="+taplat+","+taplong+"&key=AIzaSyC7BRVfrayl2FA12t9jwgXvffar_Du9xr0");
+                    String location = "";
+                    //gets data from geocode api so it finds actual location
+                    try {
+                        location = actualLoc.getJSONObject("plus_code").get("compound_code").toString();
+                        //gets rid of any unwanted characters from this geocode api
+                        location = location.substring(8);
+                        char first = location.charAt(0);
+                        if (String.valueOf(first).equals(",")){
+                            location = location.substring(1);
+                        }
+                    }
+                    //if it fails then use location from WAQI api
+                    catch (JSONException e) {
+                        location = tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString();
+                    }
+                    //delete further strings if there are too many in it
                     if (location.length()>40){
-                        //location = location.replaceAll("[^\\x20-\\x7e]", "");
                         location = location.split("\\(")[0];
+                        location = location + "...";
                     }
                     tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(location + " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
                     tapMarker.showInfoWindow();
