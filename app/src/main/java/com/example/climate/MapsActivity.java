@@ -83,7 +83,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 getSupportFragmentManager().findFragmentById(R.id.autocomplete_fragment);
 
         // Specify the types of place data to return.
-        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.ID, Place.Field.NAME,Place.Field.LAT_LNG));
+        autocompleteFragment.setPlaceFields(Arrays.asList(Place.Field.NAME,Place.Field.LAT_LNG));
 
         // Set up a PlaceSelectionListener to handle the response.
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -103,6 +103,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(place.getName()+ " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));
                     tapMarker.showInfoWindow();
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(tapMark));
 
                 } catch (IOException | JSONException e) {
                     android.util.Log.i("onMapClick", e.toString());
