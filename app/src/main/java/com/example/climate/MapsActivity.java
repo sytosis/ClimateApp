@@ -27,7 +27,11 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,9 +39,13 @@ import org.json.JSONObject;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private boolean changedRecently = false;
     LatLng tapMark;
     Marker tapMarker;
+    ArrayList<LatLng> examplePoints = new ArrayList<>();
+    ArrayList<Marker> exampleMarkers = new ArrayList<>();
     private static final String TAG = "MainActivity";
+    Timer timer = new Timer();
 
     //reads all the lines on a json
     private static String readAll(Reader rd) throws IOException {
@@ -47,6 +55,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             sb.append((char) cp);
         }
         return sb.toString();
+    }
+
+    public void setChangedRecently(boolean bool) {
+        changedRecently = bool;
     }
 
     //reads the json from a specific URL
@@ -60,6 +72,70 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } finally {
             is.close();
         }
+    }
+
+    public void addRandomPoints(int number) {
+        //clears the previous points and markers
+        for (LatLng l : examplePoints) {
+            l = null;
+        }
+        for (Marker m : exampleMarkers) {
+            m.remove();
+        }
+        exampleMarkers.clear();
+        examplePoints.clear();
+        double bottomVal = mMap.getProjection().getVisibleRegion().nearLeft.longitude*1.1;
+        double topVal = mMap.getProjection().getVisibleRegion().nearRight.longitude*0.9;
+        double leftVal = mMap.getProjection().getVisibleRegion().farLeft.latitude*1.1;
+        double rightVal = mMap.getProjection().getVisibleRegion().nearRight.latitude*0.9;
+        Random random = new Random();
+        int i = 0;
+        while (i < number) {
+            double taplat = leftVal + ((rightVal - leftVal) * random.nextDouble());
+            double taplong = bottomVal + ((topVal - bottomVal) * random.nextDouble());
+            android.util.Log.i("onMapClick", "toString" + mMap.getProjection().getVisibleRegion().toString());
+            android.util.Log.i("onMapClick", "leftval" + Double.toString(leftVal));
+            android.util.Log.i("onMapClick", "rightval" + Double.toString(rightVal));
+            android.util.Log.i("onMapClick", "taplat" + Double.toString(taplat));
+            android.util.Log.i("onMapClick", "taplong" + Double.toString(taplong));
+
+            try {
+                JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+                LatLng latlngTemp = new LatLng(taplat,taplong);
+                JSONObject actualLoc = readJsonFromUrl("https://maps.googleapis.com/maps/api/geocode/json?latlng="+taplat+","+taplong+"&key=AIzaSyC7BRVfrayl2FA12t9jwgXvffar_Du9xr0");
+                String location;
+                //gets data from geocode api so it finds actual location
+                try {
+                    location = actualLoc.getJSONObject("plus_code").get("compound_code").toString();
+                    //gets rid of any unwanted characters from this geocode api
+                    location = location.substring(8);
+                    char first = location.charAt(0);
+                    if (String.valueOf(first).equals(",")){
+                        location = location.substring(1);
+                    }
+                }
+                //if it fails then use location from WAQI api
+                catch (JSONException e) {
+                    location = tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString();
+                }
+
+                //delete further strings if there are too many in it
+                if (location.length()>40){
+                    location = location.split("\\(")[0];
+                    location = location + "...";
+                }
+                Marker markerTemp = mMap.addMarker(new MarkerOptions().position(latlngTemp).title(location + " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));
+                markerTemp.showInfoWindow();
+                android.util.Log.i("onMapClick", "markertemp" + markerTemp.toString());
+                examplePoints.add(latlngTemp);
+                exampleMarkers.add(markerTemp);
+                i++;
+            } catch (IOException | JSONException e) {
+                System.err.println(e);
+            }
+        }
+
+
     }
 
     public static void main(String[] args) throws IOException, JSONException {
@@ -188,6 +264,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 } catch (IOException | JSONException e) {
                     System.err.println(e);
                 }
+            }
+        });
+        mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
+            @Override
+            public void onCameraMove() {
+                if (!changedRecently) {
+                    android.util.Log.i("onMapClick", "moved!");
+                    //addRandomPoints(2);
+                    setChangedRecently(true);
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            setChangedRecently(false);
+                        }
+                    }, 1000);
+                }
+
+
             }
         });
         try {
