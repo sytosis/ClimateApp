@@ -141,7 +141,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney")).showInfoWindow();
         LatLng brisbane = new LatLng(-33, 129);
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
         //Create a new event listener
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
@@ -162,7 +161,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         tapMarker.remove();
                     }
                     tapMark = new LatLng(taplat,taplong);
-                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString() + " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
+                    String location = tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString();
+                    if (location.length()>40){
+                        //location = location.replaceAll("[^\\x20-\\x7e]", "");
+                        location = location.split("\\(")[0];
+                    }
+                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(location + " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
                     tapMarker.showInfoWindow();
 
                 } catch (IOException | JSONException e) {
@@ -170,8 +174,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
-        
-
         try {
             //Basic code for creating a marker with AQI info
             JSONObject beijing = readJsonFromUrl("https://api.waqi.info/feed/beijing/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
