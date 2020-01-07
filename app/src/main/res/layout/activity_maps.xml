@@ -11,8 +11,7 @@
     <fragment android:id="@+id/autocomplete_fragment"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
-        />
+        android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"/>
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -21,7 +20,54 @@
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/autocomplete_fragment" />
+        android:layout_below="@id/autocomplete_fragment"/>
 
+    <ImageButton
+        android:id="@+id/info_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/myimage"
+        android:onClick="toggleInfo"/>
+
+    <LinearLayout
+        android:id = "@+id/text_box"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        android:gravity="center">
+
+        <LinearLayout
+            android:layout_width="350dp"
+            android:layout_height="500dp"
+            android:background="@color/white"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/info_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+            />
+            <TextView
+                android:id="@+id/info_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
 
 </RelativeLayout>

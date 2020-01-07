@@ -2,9 +2,16 @@ package com.example.climate;
 
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -42,11 +49,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private boolean changedRecently = false;
     LatLng tapMark;
     Marker tapMarker;
+    String locationName;
+    String locationAQI;
     ArrayList<LatLng> examplePoints = new ArrayList<>();
     ArrayList<Marker> exampleMarkers = new ArrayList<>();
     private static final String TAG = "MainActivity";
     Timer timer = new Timer();
-
     //reads all the lines on a json
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -74,6 +82,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    public void toggleInfo(View view) {
+        LinearLayout infoText = findViewById(R.id.text_box);
+
+        if (infoText.getVisibility() == LinearLayout.GONE) {
+            infoText.setVisibility(LinearLayout.VISIBLE);
+        } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
+            infoText.setVisibility(LinearLayout.GONE);
+        }
+    }
+
+    public void changeInfo () {
+        TextView infoName = findViewById(R.id.info_name);
+        infoName.setText(locationName + "\n" + locationAQI);
+    }
+    /**
+     *Adds a random point to the map
+     * @param number number of points to be added
+     */
     public void addRandomPoints(int number) {
         //clears the previous points and markers
         for (LatLng l : examplePoints) {
@@ -93,12 +119,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         while (i < number) {
             double taplat = leftVal + ((rightVal - leftVal) * random.nextDouble());
             double taplong = bottomVal + ((topVal - bottomVal) * random.nextDouble());
-            android.util.Log.i("onMapClick", "toString" + mMap.getProjection().getVisibleRegion().toString());
-            android.util.Log.i("onMapClick", "leftval" + Double.toString(leftVal));
-            android.util.Log.i("onMapClick", "rightval" + Double.toString(rightVal));
-            android.util.Log.i("onMapClick", "taplat" + Double.toString(taplat));
-            android.util.Log.i("onMapClick", "taplong" + Double.toString(taplong));
-
             try {
                 JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
                 LatLng latlngTemp = new LatLng(taplat,taplong);
@@ -144,6 +164,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //enable Strict mode
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -258,12 +279,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         location = location.split("\\(")[0];
                         location = location + "...";
                     }
-                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(location + " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
+                    locationName = location;
+                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(location));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
+                    locationAQI =tapLoc.getJSONObject("data").get("aqi").toString();
                     tapMarker.showInfoWindow();
 
                 } catch (IOException | JSONException e) {
                     System.err.println(e);
                 }
+                changeInfo();
             }
         });
         mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
