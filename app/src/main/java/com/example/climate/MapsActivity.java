@@ -1,9 +1,15 @@
 package com.example.climate;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Log;
@@ -53,6 +59,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String locationAQI;
     ArrayList<LatLng> examplePoints = new ArrayList<>();
     ArrayList<Marker> exampleMarkers = new ArrayList<>();
+    private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
+    private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
     private static final String TAG = "MainActivity";
     Timer timer = new Timer();
     //reads all the lines on a json
@@ -83,8 +91,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void toggleInfo(View view) {
+        //opens and closes the info text box
         LinearLayout infoText = findViewById(R.id.text_box);
-
         if (infoText.getVisibility() == LinearLayout.GONE) {
             infoText.setVisibility(LinearLayout.VISIBLE);
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
@@ -92,9 +100,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public void changeInfo () {
+    public void changeInfo (String loc, boolean move) {
+
+        //finds the nearest AQI based on lat and long, before adding it to the map
+        double taplat = tapMark.latitude;
+        double taplong = tapMark.longitude;
+        try {
+            JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+            //only remove the previous marker if it exists
+            if (tapMarker != null) {
+                tapMarker.remove();
+            }
+            JSONObject actualLoc = readJsonFromUrl("https://maps.googleapis.com/maps/api/geocode/json?latlng="+taplat+","+taplong+"&key=AIzaSyC7BRVfrayl2FA12t9jwgXvffar_Du9xr0");
+            if (loc.equals("0")) {
+                String location = "";
+                //gets data from geocode api so it finds actual location
+                try {
+                    location = actualLoc.getJSONObject("plus_code").get("compound_code").toString();
+                    //gets rid of any unwanted characters from this geocode api
+                    location = location.substring(8);
+                    char first = location.charAt(0);
+                    if (String.valueOf(first).equals(",")){
+                        location = location.substring(1);
+                    }
+                }
+                //if it fails then use location from WAQI api
+                catch (JSONException e) {
+                    location = tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString();
+                }
+                //delete further strings if there are too many in it
+                if (location.length()>40){
+                    location = location.split("\\(")[0];
+                    location = location + "...";
+                }
+                locationName = location;
+            } else {
+                locationName = loc;
+            }
+            tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(locationName));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
+            locationAQI = tapLoc.getJSONObject("data").get("aqi").toString();
+            tapMarker.showInfoWindow();
+
+        } catch (IOException | JSONException e) {
+            System.err.println(e);
+        }
+        if (move) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(tapMark));
+        }
         TextView infoName = findViewById(R.id.info_name);
-        infoName.setText(locationName + "\n" + locationAQI);
+        infoName.setText(locationName);
+        TextView infoAQI = findViewById(R.id.info_aqi);
+        infoAQI.setText("AQI Level " + locationAQI);
     }
     /**
      *Adds a random point to the map
@@ -186,26 +242,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                android.util.Log.i("onMapClick", "Got to the first part");
                 //find AQI based on search result
                  tapMark = place.getLatLng();
-                 double taplat = tapMark.latitude;
-                 double taplong = tapMark.longitude;
-                android.util.Log.i("onMapClick", tapMark.toString());
-                try {
-                    JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-                    //only remove the previous marker if it exists
-                    if (tapMarker != null) {
-                        tapMarker.remove();
-                    }
-                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(place.getName()+ " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));
-                    tapMarker.showInfoWindow();
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(tapMark));
-
-                } catch (IOException | JSONException e) {
-                    android.util.Log.i("onMapClick", e.toString());
-                }
-                android.util.Log.i("onMapClick", "Got to the second part ");
+                 changeInfo(place.getName(),true);
             }
 
 
@@ -232,12 +271,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        //finds current device location
+        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSION_ACCESS_COARSE_LOCATION);
+        }
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSION_ACCESS_FINE_LOCATION);
+        }
+        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        android.util.Log.i("test",location.toString());
+        double myLong = location.getLongitude();
+        double myLat = location.getLatitude();
         // Add a location on the map
-        LatLng sydney = new LatLng(-34, 151);
-        //Adds the marker
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney")).showInfoWindow();
-        LatLng brisbane = new LatLng(-33, 129);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng current = new LatLng(myLat, myLong);
+        tapMark = current;
+        changeInfo("0",false);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
         //Create a new event listener
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
@@ -245,49 +295,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng arg0)
             {
-                //prints out the lat and long on debug
-                android.util.Log.i("onMapClick", "Hooray!"+arg0);
                 //sets lat and long to a variable
                 Double taplat = arg0.latitude;
                 Double taplong = arg0.longitude;
-                //finds the nearest AQI based on lat and long, before adding it to the map
-                try {
-                    JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-                    //only remove the previous marker if it exists
-                    if (tapMarker != null) {
-                        tapMarker.remove();
-                    }
-                    tapMark = new LatLng(taplat,taplong);
-                    JSONObject actualLoc = readJsonFromUrl("https://maps.googleapis.com/maps/api/geocode/json?latlng="+taplat+","+taplong+"&key=AIzaSyC7BRVfrayl2FA12t9jwgXvffar_Du9xr0");
-                    String location = "";
-                    //gets data from geocode api so it finds actual location
-                    try {
-                        location = actualLoc.getJSONObject("plus_code").get("compound_code").toString();
-                        //gets rid of any unwanted characters from this geocode api
-                        location = location.substring(8);
-                        char first = location.charAt(0);
-                        if (String.valueOf(first).equals(",")){
-                            location = location.substring(1);
-                        }
-                    }
-                    //if it fails then use location from WAQI api
-                    catch (JSONException e) {
-                        location = tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString();
-                    }
-                    //delete further strings if there are too many in it
-                    if (location.length()>40){
-                        location = location.split("\\(")[0];
-                        location = location + "...";
-                    }
-                    locationName = location;
-                    tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(location));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
-                    locationAQI =tapLoc.getJSONObject("data").get("aqi").toString();
-                    tapMarker.showInfoWindow();
-
-                } catch (IOException | JSONException e) {
-                    System.err.println(e);
-                }
-                changeInfo();
+                tapMark = new LatLng(taplat,taplong);
+                changeInfo("0",false);
             }
         });
         mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
@@ -308,23 +320,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
         });
-        try {
-            //Basic code for creating a marker with AQI info
-            JSONObject beijing = readJsonFromUrl("https://api.waqi.info/feed/beijing/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-            String[] beijingLoc = beijing.getJSONObject("data").getJSONObject("city").get("geo").toString().split(",",2);
-            beijingLoc[0] = beijingLoc[0].replace("[","");
-            beijingLoc[1] = beijingLoc[1].replace("]","");
-            LatLng beijingMark = new LatLng(Double.parseDouble(beijingLoc[0]),Double.parseDouble(beijingLoc[1]));
-            //mMap.addMarker(new MarkerOptions().position(beijingMark).title("AQI:" + beijing.getJSONObject("data").get("aqi").toString())).showInfoWindow();
-            JSONObject nearMe = readJsonFromUrl("https://api.waqi.info/feed/here/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-            mMap.addMarker(new MarkerOptions().position(beijingMark).title("Location:"+nearMe.getJSONObject("data").getJSONObject("city").get("name").toString())).showInfoWindow();
-            //change this title to test logging
-            mMap.addMarker(new MarkerOptions().position(brisbane).title(beijingLoc[1])).showInfoWindow();
-
-        } catch (IOException | JSONException e) {
-                System.err.println(e);
-        }
-
     }
 
 }
