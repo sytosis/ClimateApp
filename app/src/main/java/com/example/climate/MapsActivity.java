@@ -280,14 +280,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSION_ACCESS_FINE_LOCATION);
         }
         Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        android.util.Log.i("test",location.toString());
-        double myLong = location.getLongitude();
-        double myLat = location.getLatitude();
-        // Add a location on the map
-        LatLng current = new LatLng(myLat, myLong);
-        tapMark = current;
-        changeInfo("0",false);
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
+        if (location != null) {
+            android.util.Log.i("test",location.toString());
+            double myLong = location.getLongitude();
+            double myLat = location.getLatitude();
+            // Add a location on the map
+            LatLng current = new LatLng(myLat, myLong);
+            tapMark = current;
+            changeInfo("0",false);
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
+        } else {
+            android.util.Log.i("Location Error", "Location not found");
+        }
+
         //Create a new event listener
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
