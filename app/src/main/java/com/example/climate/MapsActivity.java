@@ -100,6 +100,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    public void toggleInfoClick() {
+        //opens and closes the info text box
+        LinearLayout infoText = findViewById(R.id.text_box);
+        if (infoText.getVisibility() == LinearLayout.GONE) {
+            infoText.setVisibility(LinearLayout.VISIBLE);
+        } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
+            infoText.setVisibility(LinearLayout.GONE);
+        }
+    }
+
+    public void myLocation(View view) {
+        //finds current device location
+        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSION_ACCESS_COARSE_LOCATION);
+        }
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSION_ACCESS_FINE_LOCATION);
+        }
+        try {
+            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location != null) {
+                android.util.Log.i("test",location.toString());
+                double myLong = location.getLongitude();
+                double myLat = location.getLatitude();
+                // Add a location on the map
+                LatLng current = new LatLng(myLat, myLong);
+                tapMark = current;
+                changeInfo("0",false);
+                mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
+            } else {
+                android.util.Log.i("Location Error", "Location not found");
+            }
+            mMap.animateCamera( CameraUpdateFactory.zoomTo( 13.0f ) );
+        } catch (NullPointerException e) {
+            android.util.Log.i("onMapClick", "No Location found");
+        }
+
+    }
+
     public void changeInfo (String loc, boolean move) {
 
         //finds the nearest AQI based on lat and long, before adding it to the map
@@ -151,6 +191,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         infoName.setText(locationName);
         TextView infoAQI = findViewById(R.id.info_aqi);
         infoAQI.setText("AQI Level " + locationAQI);
+        toggleInfoClick();
     }
     /**
      *Adds a random point to the map
@@ -245,6 +286,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //find AQI based on search result
                  tapMark = place.getLatLng();
                  changeInfo(place.getName(),true);
+                 mMap.animateCamera( CameraUpdateFactory.zoomTo( 13.0f ) );
             }
 
 
@@ -270,29 +312,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        //finds current device location
-        LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION}, MY_PERMISSION_ACCESS_COARSE_LOCATION);
-        }
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSION_ACCESS_FINE_LOCATION);
-        }
-        Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-        if (location != null) {
-            android.util.Log.i("test",location.toString());
-            double myLong = location.getLongitude();
-            double myLat = location.getLatitude();
-            // Add a location on the map
-            LatLng current = new LatLng(myLat, myLong);
-            tapMark = current;
-            changeInfo("0",false);
-            mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
-        } else {
-            android.util.Log.i("Location Error", "Location not found");
-        }
-
         //Create a new event listener
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
         {
@@ -321,8 +340,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                     }, 1000);
                 }
-
-
             }
         });
     }

@@ -30,11 +30,20 @@
         android:background="@drawable/myimage"
         android:onClick="toggleInfo"/>
 
+    <ImageButton
+        android:id="@+id/myLocation_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/myimage"
+        android:onClick="myLocation"/>
+
     <LinearLayout
         android:id = "@+id/text_box"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
+        
         android:gravity="center">
 
         <LinearLayout
@@ -43,6 +52,15 @@
             android:background="@color/white"
             android:gravity="center"
             android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/info_close_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:background="@drawable/myimage"
+                android:onClick="toggleInfo"
+                />
 
             <TextView
                 android:id="@+id/info_name"
@@ -64,6 +82,180 @@
                 android:textSize="18sp"
                 android:textStyle="normal"
                 />
+            <TextView
+                android:id="@+id/placeholder_2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_9"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_19"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_20"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_12"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_13"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_14"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_15"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_16"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_17"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+            <TextView
+                android:id="@+id/placeholder_18"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/test"
+                android:textSize="18sp"
+                android:textStyle="normal"
+                />
+
+
+
+
 
         </LinearLayout>
 
