@@ -4,13 +4,16 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
+import android.opengl.GLException;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
@@ -32,7 +35,6 @@ import com.google.android.libraries.places.api.Places;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,12 +44,15 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -57,11 +62,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     Marker tapMarker;
     String locationName;
     String locationAQI;
+    String locationUV;
     ArrayList<LatLng> examplePoints = new ArrayList<>();
     ArrayList<Marker> exampleMarkers = new ArrayList<>();
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
     private static final String TAG = "MainActivity";
+
     Timer timer = new Timer();
     //reads all the lines on a json
     private static String readAll(Reader rd) throws IOException {
@@ -140,13 +147,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public void changeInfo (String loc, boolean move) {
+
+    public void changeInfo (String loc, boolean move){
 
         //finds the nearest AQI based on lat and long, before adding it to the map
         double taplat = tapMark.latitude;
         double taplong = tapMark.longitude;
         try {
-            JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+            JSONObject locAQI = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+            android.util.Log.i("First part", tapMark.toString());
+            JSONObject locUV = readJsonFromUrl("https://api.openweathermap.org/data/2.5/uvi?appid=49a87b5d0f10027bd80b4cabb1bd2132&lat="+taplat+"&lon="+taplong);
+            android.util.Log.i("Second part", tapMark.toString());
             //only remove the previous marker if it exists
             if (tapMarker != null) {
                 tapMarker.remove();
@@ -166,7 +177,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
                 //if it fails then use location from WAQI api
                 catch (JSONException e) {
-                    location = tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString();
+                    location = locAQI.getJSONObject("data").getJSONObject("city").get("name").toString();
                 }
                 //delete further strings if there are too many in it
                 if (location.length()>40){
@@ -178,7 +189,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 locationName = loc;
             }
             tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(locationName));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
-            locationAQI = tapLoc.getJSONObject("data").get("aqi").toString();
+            locationAQI = locAQI.getJSONObject("data").get("aqi").toString();
+            locationUV = locUV.get("value").toString();
             tapMarker.showInfoWindow();
 
         } catch (IOException | JSONException e) {
@@ -191,7 +203,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         infoName.setText(locationName);
         TextView infoAQI = findViewById(R.id.info_aqi);
         infoAQI.setText("AQI Level " + locationAQI);
+        TextView infoUV = findViewById(R.id.info_uv);
+        infoUV.setText("UV Index " + locationUV);
         toggleInfoClick();
+        android.util.Log.i("LatLong", tapMark.toString());
     }
     /**
      *Adds a random point to the map
@@ -256,7 +271,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public static void main(String[] args) throws IOException, JSONException {
-
     }
 
     @Override
