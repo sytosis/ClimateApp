@@ -271,7 +271,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // Build a new authorized API client service.
             final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
             android.util.Log.i("made two", "test");
-            final String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
+            final String spreadsheetId = "FQQnRpGqHLcU6CA5GdnbnDpXBOc__nClbbr3h9z0_qo";
             final String range = "Class Data!A2:E";
             InputStream in = this.getAssets().open("credentials.json");
             android.util.Log.i("input stream", in.toString());
