@@ -46,6 +46,7 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -89,6 +90,17 @@ import java.util.List;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+import java.util.Calendar;
+import java.util.Date;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -272,10 +284,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             } else {
                 locationName = loc;
             }
+
+            //Find nearest place on website
+            //Give them the details
+
             tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(locationName));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
             locationAQI = locAQI.getJSONObject("data").get("aqi").toString();
             locationUV = locUV.get("value").toString();
             tapMarker.showInfoWindow();
+
+            //Get current date
+            Date currentTime = Calendar.getInstance().getTime();
+            SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+            String csvurl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
+            csvurl = csvurl + df + ".csv";
+            android.util.Log.i("URL address", csvurl.toString());
+
 
         } catch (IOException | JSONException e) {
             System.err.println(e);
