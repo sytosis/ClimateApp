@@ -296,8 +296,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //Get current date
             Date currentTime = Calendar.getInstance().getTime();
             SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+            String formattedDate = df.format(currentTime);
             String csvurl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
-            csvurl = csvurl + df + ".csv";
+            csvurl = csvurl + formattedDate + ".csv";
             android.util.Log.i("URL address", csvurl.toString());
 
 
