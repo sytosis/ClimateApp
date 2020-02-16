@@ -209,28 +209,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * @return List of names and majors
      * @throws IOException
      */
+    /*
     private List<String> getDataFromApi() throws IOException {
         chooseAccount();
         android.util.Log.i("Account",mService.toString());
-        if (Choose) {
-            String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
-            String range = "Class Data!A2:E";
-            List<String> results = new ArrayList<String>();
-            ValueRange response = this.mService.spreadsheets().values()
-                    .get(spreadsheetId, range)
-                    .execute();
-            List<List<Object>> values = response.getValues();
-            if (values != null) {
-                results.add("Name, Major");
-                for (List row : values) {
-                    results.add(row.get(0) + ", " + row.get(4));
-                }
+        String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
+        String range = "Class Data!A2:E";
+        List<String> results = new ArrayList<String>();
+        ValueRange response = this.mService.spreadsheets().values()
+                .get(spreadsheetId, range)
+                .execute();
+        List<List<Object>> values = response.getValues();
+        if (values != null) {
+            results.add("Name, Major");
+            for (List row : values) {
+                results.add(row.get(0) + ", " + row.get(4));
             }
+        }
 
             return results;
-        }
-        return null;
     }
+
+     */
 
     public void changeInfo (String loc, boolean move){
 
@@ -400,6 +400,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+
     /**
      * Attempts to set the account used with the API credentials. If an account
      * name was previously saved it will use that one; otherwise an account
@@ -410,6 +411,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * function will be rerun automatically whenever the GET_ACCOUNTS permission
      * is granted.
      */
+     /*
     @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccount() throws IOException {
         if (EasyPermissions.hasPermissions(
@@ -440,7 +442,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .build();
         Choose = true;
     }
-
+  */
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -498,11 +500,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
+        /*
         try {
             android.util.Log.i("Test",getDataFromApi().toString());
         } catch (IOException e) {
             android.util.Log.i("EXCEPTION",e.toString());
         }
+
+         */
 
     }
 
