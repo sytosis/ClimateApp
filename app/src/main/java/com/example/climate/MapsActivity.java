@@ -47,6 +47,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -295,11 +296,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             //Get current date
             Date currentTime = Calendar.getInstance().getTime();
-            SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
-            String formattedDate = df.format(currentTime);
-            String csvurl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
-            csvurl = csvurl + formattedDate + ".csv";
-            android.util.Log.i("URL address", csvurl.toString());
+
+            //calender setup
+            Calendar cal = Calendar.getInstance();
+            int i = 0;
+            boolean foundData = false;
+            while (i < 4 && !foundData) {
+                //minus "i" days
+                cal.setTime(currentTime);
+                cal.add(Calendar.DATE, -i);
+                Date date= cal.getTime();
+                SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+                String formattedDate = df.format(date);
+                String csvurl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
+                csvurl = csvurl + formattedDate + ".csv";
+                android.util.Log.i("URL address", csvurl);
+                i+=1;
+            }
+
+
 
 
         } catch (IOException | JSONException e) {
