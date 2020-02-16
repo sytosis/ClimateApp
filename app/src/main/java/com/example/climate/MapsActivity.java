@@ -55,15 +55,19 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.eclipse.jetty.util.IO;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -82,6 +86,9 @@ import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.List;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
+
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -92,15 +99,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String locationName;
     String locationAQI;
     String locationUV;
+    private boolean Choose = false;
     ArrayList<LatLng> examplePoints = new ArrayList<>();
     ArrayList<Marker> exampleMarkers = new ArrayList<>();
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
     private static final String TAG = "MainActivity";
+    private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS_READONLY };
+    private GoogleAccountCredential mCredential;
+
+    static final int REQUEST_ACCOUNT_PICKER = 1000;
+    static final int REQUEST_AUTHORIZATION = 1001;
+    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
+    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    private static final String PREF_ACCOUNT_NAME = "accountName";
 
     Timer timer = new Timer();
 
-
+    private com.google.api.services.sheets.v4.Sheets mService = null;
     private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
     private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
     private static final String TOKENS_DIRECTORY_PATH = "tokens";
@@ -109,34 +125,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * Global instance of the scopes required by this quickstart.
      * If modifying these scopes, delete your previously saved tokens/ folder.
      */
-    private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
-    /**
-     * Creates an authorized Credential object.
-     * @param HTTP_TRANSPORT The network HTTP Transport.
-     * @return An authorized Credential object.
-     * @throws IOException If the credentials.json file cannot be found.
-     */
-    private static Credential getCredentials(final NetHttpTransport HTTP_TRANSPORT, InputStream in) throws IOException {
-        // Load client secrets.
-        if (in == null) {
-            throw new FileNotFoundException("Resource not found");
-        }
-        GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, new InputStreamReader(in));
-        File tokenFolder = new File(Environment.getExternalStorageDirectory() +
-                File.separator + TOKENS_DIRECTORY_PATH);
-        if (!tokenFolder.exists()) {
-            tokenFolder.mkdirs();
-        }
 
-        // Build flow and trigger user authorization request.
-        GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                HTTP_TRANSPORT, JSON_FACTORY, clientSecrets, SCOPES)
-                .setDataStoreFactory(new FileDataStoreFactory(tokenFolder))
-                .setAccessType("offline")
-                .build();
-        LocalServerReceiver receiver = new LocalServerReceiver.Builder().setPort(8080).build();
-        return new AuthorizationCodeInstalledApp(flow, receiver).authorize("user");
-    }
     //reads all the lines on a json
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -214,6 +203,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
+    /**
+     * Fetch a list of names and majors of students in a sample spreadsheet:
+     * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+     * @return List of names and majors
+     * @throws IOException
+     */
+    private List<String> getDataFromApi() throws IOException {
+        chooseAccount();
+        android.util.Log.i("Account",mService.toString());
+        if (Choose) {
+            String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
+            String range = "Class Data!A2:E";
+            List<String> results = new ArrayList<String>();
+            ValueRange response = this.mService.spreadsheets().values()
+                    .get(spreadsheetId, range)
+                    .execute();
+            List<List<Object>> values = response.getValues();
+            if (values != null) {
+                results.add("Name, Major");
+                for (List row : values) {
+                    results.add(row.get(0) + ", " + row.get(4));
+                }
+            }
+
+            return results;
+        }
+        return null;
+    }
 
     public void changeInfo (String loc, boolean move){
 
@@ -266,34 +283,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (move) {
             mMap.moveCamera(CameraUpdateFactory.newLatLng(tapMark));
         }
-        android.util.Log.i("made one", "test");
-        try {
-            // Build a new authorized API client service.
-            final NetHttpTransport HTTP_TRANSPORT = new com.google.api.client.http.javanet.NetHttpTransport();
-            android.util.Log.i("made two", "test");
-            final String spreadsheetId = "FQQnRpGqHLcU6CA5GdnbnDpXBOc__nClbbr3h9z0_qo";
-            final String range = "Class Data!A2:E";
-            InputStream in = this.getAssets().open("credentials.json");
-            android.util.Log.i("input stream", in.toString());
-            Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT,in))
-                    .setApplicationName(APPLICATION_NAME)
-                    .build();
-            ValueRange response = service.spreadsheets().values()
-                    .get(spreadsheetId, range)
-                    .execute();
-            List<List<Object>> values = response.getValues();
-            if (values == null || values.isEmpty()) {
-                System.out.println("No data found.");
-            } else {
-                System.out.println("Name, Major");
-                for (List row : values) {
-                    // Print columns A and E, which correspond to indices 0 and 4.
-                    System.out.printf("%s, %s\n", row.get(0), row.get(4));
-                }
-            }
-        } catch (IOException e) {
-            android.util.Log.i("test",e.toString());
-        }
+
 
 
 
@@ -410,7 +400,46 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         });
     }
+    /**
+     * Attempts to set the account used with the API credentials. If an account
+     * name was previously saved it will use that one; otherwise an account
+     * picker dialog will be shown to the user. Note that the setting the
+     * account to use with the credentials object requires the app to have the
+     * GET_ACCOUNTS permission, which is requested here if it is not already
+     * present. The AfterPermissionGranted annotation indicates that this
+     * function will be rerun automatically whenever the GET_ACCOUNTS permission
+     * is granted.
+     */
+    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
+    private void chooseAccount() throws IOException {
+        if (EasyPermissions.hasPermissions(
+                this, Manifest.permission.GET_ACCOUNTS)) {
+            String accountName = getPreferences(Context.MODE_PRIVATE)
+                    .getString(PREF_ACCOUNT_NAME, null);
+            if (accountName != null) {
+                mCredential.setSelectedAccountName(accountName);
+                getDataFromApi();
+            } else {
+                // Start a dialog from which the user can choose an account
+                startActivityForResult(
+                        mCredential.newChooseAccountIntent(),
+                        REQUEST_ACCOUNT_PICKER);
+            }
+        } else {
+            // Request the GET_ACCOUNTS permission via a user dialog
+            EasyPermissions.requestPermissions(
+                    this,
+                    "This app needs to access your Google account (via Contacts).",
+                    REQUEST_PERMISSION_GET_ACCOUNTS,
+                    Manifest.permission.GET_ACCOUNTS);
+        }
 
+        mService = new com.google.api.services.sheets.v4.Sheets.Builder(
+                AndroidHttp.newCompatibleTransport(), JacksonFactory.getDefaultInstance(), mCredential)
+                .setApplicationName("Google Sheets API Android Quickstart")
+                .build();
+        Choose = true;
+    }
 
     /**
      * Manipulates the map once available.
@@ -423,16 +452,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        mCredential = GoogleAccountCredential.usingOAuth2(
+                getApplicationContext(), Arrays.asList(SCOPES))
+                .setBackOff(new ExponentialBackOff());
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-
             } else {
-
-
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},23
                 );
@@ -470,6 +498,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
+        try {
+            android.util.Log.i("Test",getDataFromApi().toString());
+        } catch (IOException e) {
+            android.util.Log.i("EXCEPTION",e.toString());
+        }
+
     }
 
 }
