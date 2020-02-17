@@ -15,7 +15,6 @@ import android.opengl.GLException;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.StrictMode;
-import android.renderscript.ScriptGroup;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -48,13 +47,13 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -94,16 +93,27 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import java.util.Calendar;
 import java.util.Date;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
+    List<ArrayList<String>> ListOfLists = new ArrayList<ArrayList<String>>();
+    ArrayList<String> listCsv = new ArrayList<String>();
     private GoogleMap mMap;
     private boolean changedRecently = false;
     LatLng tapMark;
@@ -249,7 +259,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //finds the nearest AQI based on lat and long, before adding it to the map
         double taplat = tapMark.latitude;
         double taplong = tapMark.longitude;
-        List listCsv = new ArrayList();
         try {
             JSONObject locAQI = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
             android.util.Log.i("First part", tapMark.toString());
@@ -296,16 +305,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             //Get current date
             Date currentTime = Calendar.getInstance().getTime();
-            SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy");
+            //calender setup
             Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DATE, -1);
-            dateFormat.format(cal.getTime()); //your formatted date here
+            int i = 0;
+            boolean foundData = false;
+            String csvurl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
+            while (i < 4 && !foundData) {
+                //minus "i" days
+                cal.setTime(currentTime);
+                cal.add(Calendar.DATE, -i);
+                Date date= cal.getTime();
+                SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+                String formattedDate = df.format(date);
 
-            String formattedDate = df.format(currentTime);
-            String csvurl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/02-15-2020.csv";
-            android.util.Log.i("URL address", csvurl.toString());
+                csvurl = csvurl + formattedDate + ".csv";
+                android.util.Log.i("URL address", csvurl);
+                i+=1;
+            }
+            //Reading csv url
             try {
                 URL url = new URL(csvurl);
                 try(InputStream in = url.openStream();
@@ -319,6 +337,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             String nothing = "nothing";
                             line = nothing + line;
                         }
+                        //listCsv.add("Shanghai");
+                        //ListOfLists.add(listCsv);
                         StringTokenizer tokenizer = new StringTokenizer(line, ",");
 
                         while (tokenizer.hasMoreTokens()) {
@@ -330,6 +350,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+
+
+
         } catch (IOException | JSONException e) {
             System.err.println(e);
         }
