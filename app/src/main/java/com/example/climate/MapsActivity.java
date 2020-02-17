@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
@@ -109,10 +110,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
+
+import java.lang.StringBuilder;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    List<ArrayList<String>> ListOfLists = new ArrayList<ArrayList<String>>();
+    List<List<String>> ListOfLists = new ArrayList<List<String>>();
     ArrayList<String> listCsv = new ArrayList<String>();
     private GoogleMap mMap;
     private boolean changedRecently = false;
@@ -261,9 +265,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double taplong = tapMark.longitude;
         try {
             JSONObject locAQI = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-            android.util.Log.i("First part", tapMark.toString());
+            Log.i("First part", tapMark.toString());
             JSONObject locUV = readJsonFromUrl("https://api.openweathermap.org/data/2.5/uvi?appid=49a87b5d0f10027bd80b4cabb1bd2132&lat="+taplat+"&lon="+taplong);
-            android.util.Log.i("Second part", tapMark.toString());
+            Log.i("Second part", tapMark.toString());
             //only remove the previous marker if it exists
             if (tapMarker != null) {
                 tapMarker.remove();
@@ -310,7 +314,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Calendar cal = Calendar.getInstance();
             int i = 0;
             boolean foundData = false;
-            String csvurl = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
+            String csvurl = "";
+            String original = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
             while (i < 4 && !foundData) {
                 //minus "i" days
                 cal.setTime(currentTime);
@@ -318,9 +323,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Date date= cal.getTime();
                 SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
                 String formattedDate = df.format(date);
-
-                csvurl = csvurl + formattedDate + ".csv";
-                android.util.Log.i("URL address", csvurl);
+                csvurl = original + formattedDate + ".csv";
+                URL testUrl = new URL(csvurl);
+                HttpURLConnection huc = (HttpURLConnection) testUrl.openConnection();
+                int responseCode = huc.getResponseCode();
+                String response = Integer.toString(responseCode);
+                if (responseCode == 200) {
+                    break;
+                }
+                Log.i("response code", response);
+                Log.i("URL address", csvurl);
                 i+=1;
             }
             //Reading csv url
@@ -339,12 +351,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                         //listCsv.add("Shanghai");
                         //ListOfLists.add(listCsv);
-                        StringTokenizer tokenizer = new StringTokenizer(line, ",");
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(line);
+                        //builder = builder.reverse();
+                        line = builder.toString();
+                        List<String> listCsv = Arrays.asList(line.split(",",4));
+                        ListOfLists.add(listCsv);
+                        System.out.println(ListOfLists.get(0));
 
-                        while (tokenizer.hasMoreTokens()) {
-                            android.util.Log.i("token", tokenizer.nextToken());
-                        }
-                        listCsv.add(line);
                     }
                 }
             } catch (Exception e) {
@@ -371,7 +385,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         TextView infoUV = findViewById(R.id.info_uv);
         infoUV.setText("UV Index " + locationUV);
         toggleInfoClick();
-        android.util.Log.i("LatLong", tapMark.toString());
+        Log.i("LatLong", tapMark.toString());
     }
     /**
      *Adds a random point to the map
