@@ -19,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -116,8 +117,7 @@ import java.lang.StringBuilder;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    List<List<String>> ListOfLists = new ArrayList<List<String>>();
-    ArrayList<String> listCsv = new ArrayList<String>();
+    List<List<String>> ListOfLists = new ArrayList<>();
     private GoogleMap mMap;
     private boolean changedRecently = false;
     LatLng tapMark;
@@ -125,28 +125,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String locationName;
     String locationAQI;
     String locationUV;
-    private boolean Choose = false;
     ArrayList<LatLng> examplePoints = new ArrayList<>();
     ArrayList<Marker> exampleMarkers = new ArrayList<>();
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
     private static final String TAG = "MainActivity";
-    private static final String[] SCOPES = { SheetsScopes.SPREADSHEETS_READONLY };
-    private GoogleAccountCredential mCredential;
-
-    static final int REQUEST_ACCOUNT_PICKER = 1000;
-    static final int REQUEST_AUTHORIZATION = 1001;
-    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-    private static final String PREF_ACCOUNT_NAME = "accountName";
-
     Timer timer = new Timer();
-
-    private com.google.api.services.sheets.v4.Sheets mService = null;
-    private static final String APPLICATION_NAME = "Google Sheets API Java Quickstart";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-    private static final String TOKENS_DIRECTORY_PATH = "tokens";
-
     /**
      * Global instance of the scopes required by this quickstart.
      * If modifying these scopes, delete your previously saved tokens/ folder.
@@ -189,6 +173,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    //toggles info button on click
     public void toggleInfoClick() {
         //opens and closes the info text box
         LinearLayout infoText = findViewById(R.id.text_box);
@@ -196,6 +181,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             infoText.setVisibility(LinearLayout.VISIBLE);
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
             infoText.setVisibility(LinearLayout.GONE);
+        }
+    }
+
+    //toggles loading circle
+    public void toggleLoadingCircle() {
+        //opens and closes the info text box
+        ImageView loadingCircle = findViewById(R.id.loading_circle);
+        if (loadingCircle.getVisibility() == LinearLayout.GONE) {
+            loadingCircle.setVisibility(LinearLayout.VISIBLE);
+        } else if (loadingCircle.getVisibility() == LinearLayout.VISIBLE) {
+            loadingCircle.setVisibility(LinearLayout.GONE);
         }
     }
 
@@ -229,37 +225,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    /**
-     * Fetch a list of names and majors of students in a sample spreadsheet:
-     * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-     * @return List of names and majors
-     * @throws IOException
-     */
-    /*
-    private List<String> getDataFromApi() throws IOException {
-        chooseAccount();
-        android.util.Log.i("Account",mService.toString());
-        String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
-        String range = "Class Data!A2:E";
-        List<String> results = new ArrayList<String>();
-        ValueRange response = this.mService.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute();
-        List<List<Object>> values = response.getValues();
-        if (values != null) {
-            results.add("Name, Major");
-            for (List row : values) {
-                results.add(row.get(0) + ", " + row.get(4));
-            }
-        }
-
-            return results;
-    }
-
-     */
-
     public void changeInfo (String loc, boolean move){
-
+        ImageView loadingCircle = findViewById(R.id.loading_circle);
+        loadingCircle.setVisibility(LinearLayout.VISIBLE);
+        System.out.println("ON!");
         //finds the nearest AQI based on lat and long, before adding it to the map
         double taplat = tapMark.latitude;
         double taplong = tapMark.longitude;
@@ -306,69 +275,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             locationAQI = locAQI.getJSONObject("data").get("aqi").toString();
             locationUV = locUV.get("value").toString();
             tapMarker.showInfoWindow();
-
-            //Get current date
-            Date currentTime = Calendar.getInstance().getTime();
-
-            //calender setup
-            Calendar cal = Calendar.getInstance();
-            int i = 0;
-            boolean foundData = false;
-            String csvurl = "";
-            String original = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
-            while (i < 4 && !foundData) {
-                //minus "i" days
-                cal.setTime(currentTime);
-                cal.add(Calendar.DATE, -i);
-                Date date= cal.getTime();
-                SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
-                String formattedDate = df.format(date);
-                csvurl = original + formattedDate + ".csv";
-                URL testUrl = new URL(csvurl);
-                HttpURLConnection huc = (HttpURLConnection) testUrl.openConnection();
-                int responseCode = huc.getResponseCode();
-                String response = Integer.toString(responseCode);
-                if (responseCode == 200) {
-                    break;
-                }
-                Log.i("response code", response);
-                Log.i("URL address", csvurl);
-                i+=1;
-            }
-            int counter = 0;
-            //Reading csv url
-            try {
-                URL url = new URL(csvurl);
-                try(InputStream in = url.openStream();
-
-                    InputStreamReader inr = new InputStreamReader(in);
-                    BufferedReader br = new BufferedReader(inr)) {
-                    String line = br.readLine();
-                    while(line != null) {
-                        line = br.readLine();
-                        char tester = line.charAt(0);
-                        if (!Character.isLetter(tester)) {
-                            String nothing = "nothing";
-                            ++counter;
-                            line = nothing + counter + line;
-                        }
-                        StringBuilder builder = new StringBuilder();
-                        builder.append(line);
-                        //builder = builder.reverse();
-                        line = builder.toString();
-                        List<String> listCsv = Arrays.asList(line.split(",",4));
-                        ListOfLists.add(listCsv);
-                        System.out.println(listCsv.get(1));
-
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-
-
         } catch (IOException | JSONException e) {
             System.err.println(e);
         }
@@ -387,7 +293,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         infoUV.setText("UV Index " + locationUV);
         toggleInfoClick();
         Log.i("LatLong", tapMark.toString());
+        loadingCircle.setVisibility(LinearLayout.GONE);
+        System.out.println("OFF!");
     }
+
     /**
      *Adds a random point to the map
      * @param number number of points to be added
@@ -491,50 +400,75 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 android.util.Log.i("onMapClick", status + "Error");
             }
         });
-    }
 
-    /**
-     * Attempts to set the account used with the API credentials. If an account
-     * name was previously saved it will use that one; otherwise an account
-     * picker dialog will be shown to the user. Note that the setting the
-     * account to use with the credentials object requires the app to have the
-     * GET_ACCOUNTS permission, which is requested here if it is not already
-     * present. The AfterPermissionGranted annotation indicates that this
-     * function will be rerun automatically whenever the GET_ACCOUNTS permission
-     * is granted.
-     */
-     /*
-    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
-    private void chooseAccount() throws IOException {
-        if (EasyPermissions.hasPermissions(
-                this, Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = getPreferences(Context.MODE_PRIVATE)
-                    .getString(PREF_ACCOUNT_NAME, null);
-            if (accountName != null) {
-                mCredential.setSelectedAccountName(accountName);
-                getDataFromApi();
-            } else {
-                // Start a dialog from which the user can choose an account
-                startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
+        //sets up coronavirus reading data
+        try {
+            //Get current date
+            Date currentTime = Calendar.getInstance().getTime();
+
+            //calender setup
+            Calendar cal = Calendar.getInstance();
+            int i = 0;
+            boolean foundData = false;
+            String csvurl = "";
+            String original = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
+            while (i < 4 && !foundData) {
+                //minus "i" days
+                cal.setTime(currentTime);
+                cal.add(Calendar.DATE, -i);
+                Date date= cal.getTime();
+                SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+                String formattedDate = df.format(date);
+                csvurl = original + formattedDate + ".csv";
+                URL testUrl = new URL(csvurl);
+                HttpURLConnection huc = (HttpURLConnection) testUrl.openConnection();
+                int responseCode = huc.getResponseCode();
+                String response = Integer.toString(responseCode);
+                if (responseCode == 200) {
+                    break;
+                }
+                Log.i("response code", response);
+                Log.i("URL address", csvurl);
+                i+=1;
             }
-        } else {
-            // Request the GET_ACCOUNTS permission via a user dialog
-            EasyPermissions.requestPermissions(
-                    this,
-                    "This app needs to access your Google account (via Contacts).",
-                    REQUEST_PERMISSION_GET_ACCOUNTS,
-                    Manifest.permission.GET_ACCOUNTS);
-        }
+            int counter = 0;
+            //Reading csv url
+            URL url = new URL(csvurl);
+            try(InputStream in = url.openStream();
 
-        mService = new com.google.api.services.sheets.v4.Sheets.Builder(
-                AndroidHttp.newCompatibleTransport(), JacksonFactory.getDefaultInstance(), mCredential)
-                .setApplicationName("Google Sheets API Android Quickstart")
-                .build();
-        Choose = true;
+                InputStreamReader inr = new InputStreamReader(in);
+                BufferedReader br = new BufferedReader(inr)) {
+                String line = br.readLine();
+                while(line != null) {
+                    line = br.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    char tester = line.charAt(0);
+                    if (!Character.isLetter(tester)) {
+                        line = line.substring(1);
+                    }
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(line);
+                    builder = builder.reverse();
+                    line = builder.toString();
+                    List<String> listCsv = Arrays.asList(line.split(",",5));
+                    for (int j = 0; j < listCsv.size(); j++) {
+                        builder = new StringBuilder();
+                        builder.append(listCsv.get(j));
+                        builder = builder.reverse();
+                        listCsv.set(j,builder.toString());
+                    }
+                    Collections.reverse(listCsv);
+                    ListOfLists.add(listCsv);
+                }
+                System.out.println(ListOfLists);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-  */
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -546,21 +480,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        mCredential = GoogleAccountCredential.usingOAuth2(
-                getApplicationContext(), Arrays.asList(SCOPES))
-                .setBackOff(new ExponentialBackOff());
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},23
-                );
-            }
-        }
-
         mMap = googleMap;
         //Create a new event listener
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
@@ -592,14 +511,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 }
             }
         });
-        /*
-        try {
-            android.util.Log.i("Test",getDataFromApi().toString());
-        } catch (IOException e) {
-            android.util.Log.i("EXCEPTION",e.toString());
-        }
-
-         */
 
     }
 
