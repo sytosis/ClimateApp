@@ -335,10 +335,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.i("URL address", csvurl);
                 i+=1;
             }
+            int counter = 0;
             //Reading csv url
             try {
                 URL url = new URL(csvurl);
                 try(InputStream in = url.openStream();
+
                     InputStreamReader inr = new InputStreamReader(in);
                     BufferedReader br = new BufferedReader(inr)) {
                     String line = br.readLine();
@@ -347,17 +349,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         char tester = line.charAt(0);
                         if (!Character.isLetter(tester)) {
                             String nothing = "nothing";
-                            line = nothing + line;
+                            ++counter;
+                            line = nothing + counter + line;
                         }
-                        //listCsv.add("Shanghai");
-                        //ListOfLists.add(listCsv);
                         StringBuilder builder = new StringBuilder();
                         builder.append(line);
                         //builder = builder.reverse();
                         line = builder.toString();
                         List<String> listCsv = Arrays.asList(line.split(",",4));
                         ListOfLists.add(listCsv);
-                        System.out.println(ListOfLists.get(0));
+                        System.out.println(listCsv.get(1));
 
                     }
                 }
