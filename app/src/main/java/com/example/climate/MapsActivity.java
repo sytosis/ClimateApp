@@ -561,7 +561,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }
                             });
                         }
-                    }, 0, 2500); // End of your timer code.
+                    }, 0, 5000); // End of your timer code.
 
                 }
                 }
