@@ -276,7 +276,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                     JSONArray fullNameArray = actualLoc.getJSONArray("results").getJSONObject(1).getJSONArray("address_components");
-                    
+                    String fullNameSearch;
+                    fullNameSearch = fullNameArray.get(0).toString();
                     android.util.Log.i("Full location name",fullNameSearch);
                 }
                 //if it fails then use location from WAQI api
