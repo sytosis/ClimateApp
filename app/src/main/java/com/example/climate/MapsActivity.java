@@ -125,6 +125,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String locationName;
     String locationAQI;
     String locationUV;
+    boolean loading = false;
     ArrayList<LatLng> examplePoints = new ArrayList<>();
     ArrayList<Marker> exampleMarkers = new ArrayList<>();
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
@@ -490,51 +491,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng arg0)
             {
-                //sets lat and long to a variable
-                Double taplat = arg0.latitude;
-                Double taplong = arg0.longitude;
-                tapMark = new LatLng(taplat,taplong);
-                toggleLoadingCircle();
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
-                    @Override
-                    public void run() {
-                        // Your logic here...
-
-                        // When you need to modify a UI element, do so on the UI thread.
-                        // 'getActivity()' is required as this is being ran from a Fragment.
-                        MapsActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                                changeInfo("0",false);
-                                toggleLoadingCircle();
-                                timer.purge();
-                                timer.cancel();
-                            }
-                        });
-                    }
-                }, 0, 2000); // End of your timer code.
-
-            }
-        });
-        mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
-            @Override
-            public void onCameraMove() {
-                if (!changedRecently) {
-                    android.util.Log.i("onMapClick", "moved!");
-                    //addRandomPoints(2);
-                    setChangedRecently(true);
+                if (!loading) {
+                    //sets lat and long to a variable
+                    Double taplat = arg0.latitude;
+                    Double taplong = arg0.longitude;
+                    tapMark = new LatLng(taplat,taplong);
+                    toggleLoadingCircle();
+                    loading = true;
+                    timer = new Timer();
                     timer.schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            setChangedRecently(false);
-                        }
-                    }, 1000);
-                }
-            }
-        });
+                            // Your logic here...
 
+                            // When you need to modify a UI element, do so on the UI thread.
+                            // 'getActivity()' is required as this is being ran from a Fragment.
+                            MapsActivity.this.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                                    changeInfo("0",false);
+                                    toggleLoadingCircle();
+                                    timer.purge();
+                                    timer.cancel();
+                                    loading = false;
+                                }
+                            });
+                        }
+                    }, 0, 2000); // End of your timer code.
+
+                }
+                }
+
+        });
     }
 
 }
