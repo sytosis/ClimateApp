@@ -243,7 +243,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             JSONObject actualLoc = readJsonFromUrl("https://maps.googleapis.com/maps/api/geocode/json?latlng="+taplat+","+taplong+"&key=AIzaSyC7BRVfrayl2FA12t9jwgXvffar_Du9xr0");
             if (loc.equals("0")) {
-                String location = "";
+                String location;
                 //gets data from geocode api so it finds actual location
                 try {
                     location = actualLoc.getJSONObject("plus_code").get("compound_code").toString();
@@ -253,10 +253,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (String.valueOf(first).equals(",")){
                         location = location.substring(1);
                     }
+
+                    String fullNameSearch = actualLoc.getJSONObject("results").getJSONObject("address_components").toString();
+                    android.util.Log.i("Full location name",fullNameSearch);
                 }
                 //if it fails then use location from WAQI api
                 catch (JSONException e) {
                     location = locAQI.getJSONObject("data").getJSONObject("city").get("name").toString();
+                    android.util.Log.i("Location AQI Error ",e.toString());
+
                 }
                 //delete further strings if there are too many in it
                 if (location.length()>40){
@@ -388,6 +393,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onPlaceSelected(Place place) {
                 //find AQI based on search result
                  tapMark = place.getLatLng();
+                 toggleLoadingCircle();
+                 
                  changeInfo(place.getName(),true);
                  mMap.animateCamera( CameraUpdateFactory.zoomTo( 13.0f ) );
             }
