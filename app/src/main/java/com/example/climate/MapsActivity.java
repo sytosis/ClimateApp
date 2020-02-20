@@ -213,8 +213,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 double myLat = location.getLatitude();
                 // Add a location on the map
                 LatLng current = new LatLng(myLat, myLong);
+                toggleLoadingCircle();
                 tapMark = current;
-                changeInfo("0",false);
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        // Your logic here...
+
+                        // When you need to modify a UI element, do so on the UI thread.
+                        // 'getActivity()' is required as this is being ran from a Fragment.
+                        MapsActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                                changeInfo("0",false);
+                                toggleLoadingCircle();
+                                timer.purge();
+                                timer.cancel();
+                                loading = false;
+                            }
+                        });
+                    }
+                }, 0, 2000); // End of your timer code.
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
             } else {
                 android.util.Log.i("Location Error", "Location not found");
@@ -391,7 +412,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onPlaceSelected(Place place) {
                 //find AQI based on search result
                  tapMark = place.getLatLng();
-                 changeInfo(place.getName(),true);
+                 toggleLoadingCircle();
+                 final String name = place.getName();
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        // Your logic here...
+
+                        // When you need to modify a UI element, do so on the UI thread.
+                        // 'getActivity()' is required as this is being ran from a Fragment.
+                        MapsActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                                changeInfo(name,true);
+                                toggleLoadingCircle();
+                                timer.purge();
+                                timer.cancel();
+                                loading = false;
+                            }
+                        });
+                    }
+                }, 0, 2000); // End of your timer code.
                  mMap.animateCamera( CameraUpdateFactory.zoomTo( 13.0f ) );
             }
 
@@ -518,7 +561,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 }
                             });
                         }
-                    }, 0, 2000); // End of your timer code.
+                    }, 0, 2500); // End of your timer code.
 
                 }
                 }
