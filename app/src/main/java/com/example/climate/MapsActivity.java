@@ -226,8 +226,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void changeInfo (String loc, boolean move){
-        ImageView loadingCircle = findViewById(R.id.loading_circle);
-        loadingCircle.setVisibility(LinearLayout.VISIBLE);
         System.out.println("ON!");
         //finds the nearest AQI based on lat and long, before adding it to the map
         double taplat = tapMark.latitude;
@@ -254,14 +252,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         location = location.substring(1);
                     }
 
-                    String fullNameSearch = actualLoc.getJSONObject("results").getJSONObject("address_components").toString();
+                    String fullNameSearch = actualLoc.getJSONObject("results").getJSONObject("address_components").get("long_name").toString();
                     android.util.Log.i("Full location name",fullNameSearch);
                 }
                 //if it fails then use location from WAQI api
                 catch (JSONException e) {
                     location = locAQI.getJSONObject("data").getJSONObject("city").get("name").toString();
                     android.util.Log.i("Location AQI Error ",e.toString());
-
                 }
                 //delete further strings if there are too many in it
                 if (location.length()>40){
@@ -298,8 +295,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         infoUV.setText("UV Index " + locationUV);
         toggleInfoClick();
         Log.i("LatLong", tapMark.toString());
-        loadingCircle.setVisibility(LinearLayout.GONE);
         System.out.println("OFF!");
+
     }
 
     /**
@@ -393,8 +390,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onPlaceSelected(Place place) {
                 //find AQI based on search result
                  tapMark = place.getLatLng();
-                 toggleLoadingCircle();
-                 
                  changeInfo(place.getName(),true);
                  mMap.animateCamera( CameraUpdateFactory.zoomTo( 13.0f ) );
             }
@@ -438,7 +433,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Log.i("URL address", csvurl);
                 i+=1;
             }
-            int counter = 0;
             //Reading csv url
             URL url = new URL(csvurl);
             try(InputStream in = url.openStream();
@@ -476,6 +470,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+
     /**
      * Manipulates the map once available.
      * This callback is triggered when the map is ready to be used.
@@ -499,7 +494,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 Double taplat = arg0.latitude;
                 Double taplong = arg0.longitude;
                 tapMark = new LatLng(taplat,taplong);
-                changeInfo("0",false);
+                toggleLoadingCircle();
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        // Your logic here...
+
+                        // When you need to modify a UI element, do so on the UI thread.
+                        // 'getActivity()' is required as this is being ran from a Fragment.
+                        MapsActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                // This code will always run on the UI thread, therefore is safe to modify UI elements.
+                                changeInfo("0",false);
+                                toggleLoadingCircle();
+                                timer.purge();
+                                timer.cancel();
+                            }
+                        });
+                    }
+                }, 0, 2000); // End of your timer code.
+
             }
         });
         mMap.setOnCameraMoveListener(new GoogleMap.OnCameraMoveListener() {
