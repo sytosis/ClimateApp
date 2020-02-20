@@ -60,6 +60,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.eclipse.jetty.util.IO;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -274,7 +275,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         location = location.substring(1);
                     }
 
-                    String fullNameSearch = actualLoc.getJSONObject("results").getJSONObject("address_components").get("long_name").toString();
+                    JSONArray fullNameArray = actualLoc.getJSONArray("results").getJSONObject(1).getJSONArray("address_components");
+                    
                     android.util.Log.i("Full location name",fullNameSearch);
                 }
                 //if it fails then use location from WAQI api
