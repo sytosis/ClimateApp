@@ -283,6 +283,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         fullNameSearch += " ";
                     }
                     android.util.Log.i("Full location name",fullNameSearch);
+                    for (int i = 0; i < ListOfLists.size(); ++i) {
+                        List list = ListOfLists.get(i);
+                        for (int j = 0; j < list.size();++j) {
+                            String section = list.get(j).toString();
+                            String[] parts = fullNameSearch.split(" ");
+                            for (int z = 0; z < parts.length; ++z) {
+                                String partslower = parts[z].toLowerCase();
+                                String sectionlower = section.toLowerCase();
+                                if (sectionlower.contains(partslower)) {
+                                    android.util.Log.i("It exists in list",sectionlower);
+                                }
+                            }
+                        }
+                    }
+
                 }
                 //if it fails then use location from WAQI api
                 catch (Exception e) {
