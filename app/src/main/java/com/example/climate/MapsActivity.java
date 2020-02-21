@@ -283,17 +283,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         fullNameSearch += " ";
                     }
                     android.util.Log.i("Full location name",fullNameSearch);
+                    // for loop label
                     aa:
+                    // searches all the lists(1) in the list of lists(0)
                     for (int i = 0; i < ListOfLists.size(); ++i) {
+                        //getting list(1)
                         List list = ListOfLists.get(i);
+                        // search all parts in the list(1)
                         for (int j = 0; j < list.size();++j) {
+                            // getting a part of list(1)
                             String section = list.get(j).toString();
+                            // splitting each part of the fullnamesearch into parts based on space
                             String[] parts = fullNameSearch.split(" ");
+                            // checking if each part exists in a section
                             for (int z = 0; z < parts.length; ++z) {
+                                // making the part and section lowercase
                                 String partslower = parts[z].toLowerCase();
                                 String sectionlower = section.toLowerCase();
+                                // checking if the section contains a part
                                 if (sectionlower.contains(partslower)) {
                                     android.util.Log.i("It exists in list",sectionlower);
+                                    //breaks aa for loop
                                     break aa;
                                 }
                             }
