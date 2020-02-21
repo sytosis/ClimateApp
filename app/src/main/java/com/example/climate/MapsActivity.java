@@ -276,12 +276,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
 
                     JSONArray fullNameArray = actualLoc.getJSONArray("results").getJSONObject(1).getJSONArray("address_components");
-                    String fullNameSearch;
-                    fullNameSearch = fullNameArray.get(0).toString();
+                    String fullNameSearch = "";
+                    for (int i = 0; i < fullNameArray.length(); i++) {
+                        JSONObject namePart = fullNameArray.getJSONObject(i);
+                        fullNameSearch += namePart.get("long_name");
+                        fullNameSearch += " ";
+                    }
                     android.util.Log.i("Full location name",fullNameSearch);
                 }
                 //if it fails then use location from WAQI api
-                catch (JSONException e) {
+                catch (Exception e) {
                     location = locAQI.getJSONObject("data").getJSONObject("city").get("name").toString();
                     android.util.Log.i("Location AQI Error ",e.toString());
                 }
