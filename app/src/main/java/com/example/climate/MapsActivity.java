@@ -299,15 +299,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             // making the part and section lowercase
                             String partslower = parts[z].toLowerCase();
                             String sectionlower = section.toLowerCase();
-                            android.util.Log.i("Parts lower", partslower);
-                            android.util.Log.i("Section lower", sectionlower);
                             // checking if the section contains a part
                             if (sectionlower.contains(partslower)) {
                                 //breaks aa for loop
-                                String country[] = sectionlower.split(",");
-                                if (parts[parts.length-1].toLowerCase().contains(country[1])) {
-                                    break aa;
+                                if (sectionlower.contains(",")) {
+                                    String country[] = sectionlower.split(",");
+                                    if (parts[parts.length-1].toLowerCase().contains(country[1])) {
+                                        android.util.Log.i("list", list.get(0).toString());
+                                        break aa;
+                                    }
                                 }
+                                else {
+                                    if (parts[parts.length-1].toLowerCase().contains(sectionlower)) {
+                                        android.util.Log.i("list", list.get(0).toString());
+                                        break aa;
+                                    }
+                                }
+                                // if the country section for both are the same break
                             }
                         }
                     }
