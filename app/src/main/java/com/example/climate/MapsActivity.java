@@ -300,6 +300,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 JSONObject namePart = fullNameArray.getJSONObject(i);
                 fullNameSearch += namePart.get("long_name");
                 fullNameSearch += ",";
+                if (fullNameSearch.substring(fullNameSearch.length() - 1) == ",") {
+                    fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
+                }
             }
             android.util.Log.i("Full location name",fullNameSearch);
             // for loop label
@@ -338,7 +341,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                 }
             }
-
             //Find nearest place on website
             //Give them the details
             tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(locationName));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
@@ -351,10 +353,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (move) {
             mMap.moveCamera(CameraUpdateFactory.newLatLng(tapMark));
         }
-
-
-
-
         TextView infoName = findViewById(R.id.info_name);
         infoName.setText(locationName);
         TextView infoAQI = findViewById(R.id.info_aqi);
@@ -561,8 +559,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //setting up country data through list of locations done above
         for (int i = 0; i < listOfLocations.size(); ++i) {
-            
+            String getCountry[] = listOfLocations.get(i).get(0).split(",");
+            String tempCountry = getCountry[getCountry.length-1];
+            List<String> tempLocation = new ArrayList<>();
+            boolean countryNotInList = true;
+            tempLocation.add(tempCountry);
+            tempLocation.add(listOfLocations.get(i).get(2));
+            tempLocation.add(listOfLocations.get(i).get(3));
+            tempLocation.add(listOfLocations.get(i).get(4));
+            for (int x = 0; x < listOfCountries.size(); ++x) {
+                if (listOfCountries.get(x).get(0) == tempCountry) {
+                    countryNotInList = false ;
+                }
+            }
+            if (countryNotInList) {
+                listOfCountries.add(tempLocation);
+            } else {
+                for (int y = 0; y < listOfCountries.size(); ++y) {
+                    if (listOfCountries.get(y).get(0) == tempCountry) {
+                        //Cases
+                        int value = Integer.valueOf(listOfCountries.get(y).get(1)) + Integer.valueOf(tempLocation.get(1));
+                        String intValue = Integer.toString(value);
+                        listOfCountries.get(y).set(1,intValue);
+
+                        //deaths
+                        value = Integer.valueOf(listOfCountries.get(y).get(2)) + Integer.valueOf(tempLocation.get(2));
+                        intValue = Integer.toString(value);
+                        listOfCountries.get(y).set(2,intValue);
+
+                        //recovered
+                        value = Integer.valueOf(listOfCountries.get(y).get(3)) + Integer.valueOf(tempLocation.get(3));
+                        intValue = Integer.toString(value);
+                        listOfCountries.get(y).set(3,intValue);
+                    }
+                }
+            }
         }
+        System.out.println(listOfCountries);
 
     }
 
