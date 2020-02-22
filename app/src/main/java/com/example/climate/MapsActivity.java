@@ -118,7 +118,8 @@ import java.lang.StringBuilder;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    List<List<String>> ListOfLists = new ArrayList<>();
+    List<List<String>> listOfLocations = new ArrayList<>();
+    List<List<String>> listOfCountries = new ArrayList<>();
     private GoogleMap mMap;
     private boolean changedRecently = false;
     LatLng tapMark;
@@ -172,6 +173,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             infoText.setVisibility(LinearLayout.VISIBLE);
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
             infoText.setVisibility(LinearLayout.GONE);
+            ImageView loadingCircle = findViewById(R.id.loading_circle);
+            loadingCircle.setVisibility(LinearLayout.GONE); // in case the loading bar still appears behind the info.
         }
     }
 
@@ -183,6 +186,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             infoText.setVisibility(LinearLayout.VISIBLE);
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
             infoText.setVisibility(LinearLayout.GONE);
+            ImageView loadingCircle = findViewById(R.id.loading_circle);
+            loadingCircle.setVisibility(LinearLayout.GONE); // in case the loading bar still appears behind the info.
         }
     }
 
@@ -236,7 +241,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         });
                     }
-                }, 0, 2000); // End of your timer code.
+                }, 0, 5000); // End of your timer code.
                 mMap.moveCamera(CameraUpdateFactory.newLatLng(current));
             } else {
                 android.util.Log.i("Location Error", "Location not found");
@@ -274,52 +279,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     if (String.valueOf(first).equals(",")){
                         location = location.substring(1);
                     }
-
-                    JSONArray fullNameArray = actualLoc.getJSONArray("results").getJSONObject(1).getJSONArray("address_components");
-                    String fullNameSearch = "";
-                    for (int i = 0; i < fullNameArray.length(); i++) {
-                        JSONObject namePart = fullNameArray.getJSONObject(i);
-                        fullNameSearch += namePart.get("long_name");
-                        fullNameSearch += " ";
-                    }
-                    android.util.Log.i("Full location name",fullNameSearch);
-                    // for loop label
-                    aa:
-                    // searches all the lists(1) in the list of lists(0)
-                    for (int i = 0; i < ListOfLists.size(); ++i) {
-                        //getting list(1)
-                        List list = ListOfLists.get(i);
-                        // search all parts in the list(1)
-                        // getting a part of list(1)
-                        String section = list.get(0).toString();
-                        // splitting each part of the fullnamesearch into parts based on space
-                        String[] parts = fullNameSearch.split(" ");
-                        // checking if each part exists in a section
-                        for (int z = 0; z < parts.length; ++z) {
-                            // making the part and section lowercase
-                            String partslower = parts[z].toLowerCase();
-                            String sectionlower = section.toLowerCase();
-                            // checking if the section contains a part
-                            if (sectionlower.contains(partslower)) {
-                                //breaks aa for loop
-                                if (sectionlower.contains(",")) {
-                                    String country[] = sectionlower.split(",");
-                                    if (parts[parts.length-1].toLowerCase().contains(country[1])) {
-                                        android.util.Log.i("list", list.get(0).toString());
-                                        break aa;
-                                    }
-                                }
-                                else {
-                                    if (parts[parts.length-1].toLowerCase().contains(sectionlower)) {
-                                        android.util.Log.i("list", list.get(0).toString());
-                                        break aa;
-                                    }
-                                }
-                                // if the country section for both are the same break
-                            }
-                        }
-                    }
-
                 }
                 //if it fails then use location from WAQI api
                 catch (Exception e) {
@@ -335,10 +294,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             } else {
                 locationName = loc;
             }
+            JSONArray fullNameArray = actualLoc.getJSONArray("results").getJSONObject(1).getJSONArray("address_components");
+            String fullNameSearch = "";
+            for (int i = 0; i < fullNameArray.length(); i++) {
+                JSONObject namePart = fullNameArray.getJSONObject(i);
+                fullNameSearch += namePart.get("long_name");
+                fullNameSearch += ",";
+            }
+            android.util.Log.i("Full location name",fullNameSearch);
+            // for loop label
+            aa:
+            // searches all the lists(1) in the list of lists(0)
+            for (int i = 0; i < listOfLocations.size(); ++i) {
+                //getting list(1)
+                List list = listOfLocations.get(i);
+                // search all parts in the list(1)
+                // getting a part of list(1)
+                String section = list.get(0).toString();
+                // splitting each part of the fullnamesearch into parts based on space
+                String[] parts = fullNameSearch.split(",");
+                // checking if each part exists in a section
+                for (int z = 0; z < parts.length; ++z) {
+                    // making the part and section lowercase
+                    String partslower = parts[z].toLowerCase();
+                    String sectionlower = section.toLowerCase();
+                    // checking if the section contains a part
+                    if (sectionlower.contains(partslower)) {
+                        //breaks aa for loop
+                        if (sectionlower.contains(",")) {
+                            String country[] = sectionlower.split(",");
+                            if (parts[parts.length-1].toLowerCase().contains(country[1])) {
+                                android.util.Log.i("list", list.get(0).toString());
+                                break aa;
+                            }
+                        }
+                        else {
+                            if (parts[parts.length-1].toLowerCase().contains(sectionlower)) {
+                                android.util.Log.i("list", list.get(0).toString());
+                                break aa;
+                            }
+                        }
+                        // if the country section for both are the same break
+                    }
+                }
+            }
 
             //Find nearest place on website
             //Give them the details
-
             tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(locationName));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
             locationAQI = locAQI.getJSONObject("data").get("aqi").toString();
             locationUV = locUV.get("value").toString();
@@ -458,8 +460,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                  tapMark = place.getLatLng();
                  toggleLoadingCircle();
                  final String name = place.getName();
-                timer = new Timer();
-                timer.schedule(new TimerTask() {
+                 timer = new Timer();
+                 timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
                         // Your logic here...
@@ -478,7 +480,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             }
                         });
                     }
-                }, 0, 2000); // End of your timer code.
+                }, 0, 5000); // End of your timer code.
                  mMap.animateCamera( CameraUpdateFactory.zoomTo( 13.0f ) );
             }
 
@@ -549,13 +551,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         listCsv.set(j,builder.toString());
                     }
                     Collections.reverse(listCsv);
-                    ListOfLists.add(listCsv);
+                    listOfLocations.add(listCsv);
                 }
-                System.out.println(ListOfLists);
+                System.out.println(listOfLocations);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        //setting up country data through list of locations done above
+        for (int i = 0; i < listOfLocations.size(); ++i) {
+            
+        }
+
     }
 
 
