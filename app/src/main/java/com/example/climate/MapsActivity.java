@@ -300,10 +300,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 JSONObject namePart = fullNameArray.getJSONObject(i);
                 fullNameSearch += namePart.get("long_name");
                 fullNameSearch += ",";
-                if (fullNameSearch.substring(fullNameSearch.length() - 1) == ",") {
-                    fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
-                }
             }
+            fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
             android.util.Log.i("Full location name",fullNameSearch);
             // for loop label
             aa:
@@ -568,15 +566,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             tempLocation.add(listOfLocations.get(i).get(3));
             tempLocation.add(listOfLocations.get(i).get(4));
             for (int x = 0; x < listOfCountries.size(); ++x) {
-                if (listOfCountries.get(x).get(0) == tempCountry) {
+                if (listOfCountries.get(x).get(0).equals(tempCountry)) {
                     countryNotInList = false ;
                 }
+
             }
             if (countryNotInList) {
                 listOfCountries.add(tempLocation);
             } else {
                 for (int y = 0; y < listOfCountries.size(); ++y) {
-                    if (listOfCountries.get(y).get(0) == tempCountry) {
+                    if (listOfCountries.get(y).get(0).equals(tempCountry)) {
                         //Cases
                         int value = Integer.valueOf(listOfCountries.get(y).get(1)) + Integer.valueOf(tempLocation.get(1));
                         String intValue = Integer.toString(value);
