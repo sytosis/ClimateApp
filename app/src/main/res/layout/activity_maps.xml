@@ -101,7 +101,7 @@
                 android:textStyle="normal"
                 />
             <TextView
-                android:id="@+id/placeholder_3"
+                android:id="@+id/region_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -111,7 +111,7 @@
                 android:textStyle="normal"
                 />
             <TextView
-                android:id="@+id/placeholder_4"
+                android:id="@+id/region_cases"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -121,7 +121,7 @@
                 android:textStyle="normal"
                 />
             <TextView
-                android:id="@+id/placeholder_5"
+                android:id="@+id/country_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -131,7 +131,7 @@
                 android:textStyle="normal"
                 />
             <TextView
-                android:id="@+id/placeholder_6"
+                android:id="@+id/country_cases"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"

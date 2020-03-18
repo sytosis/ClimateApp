@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.StringJoiner;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -258,6 +259,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //finds the nearest AQI based on lat and long, before adding it to the map
         double taplat = tapMark.latitude;
         double taplong = tapMark.longitude;
+        List regionList = new ArrayList();
+        List countryList = new ArrayList();
         try {
             JSONObject locAQI = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
             Log.i("First part", tapMark.toString());
@@ -298,49 +301,64 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             String fullNameSearch = "";
             for (int i = 0; i < fullNameArray.length(); i++) {
                 JSONObject namePart = fullNameArray.getJSONObject(i);
-                fullNameSearch += namePart.get("long_name");
-                fullNameSearch += ",";
+                String tempName = namePart.get("long_name").toString();
+                if (!tempName.matches("\\d+")) {
+                    fullNameSearch += namePart.get("long_name");
+                    fullNameSearch += ",";
+                }
+
             }
             fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
             android.util.Log.i("Full location name",fullNameSearch);
             // for loop label
             aa:
             // searches all the lists(1) in the list of lists(0)
+            //calculate state cases here
             for (int i = 0; i < listOfLocations.size(); ++i) {
                 //getting list(1)
                 List list = listOfLocations.get(i);
                 // search all parts in the list(1)
                 // getting a part of list(1)
-                String section = list.get(0).toString();
+                String listSearchSection = list.get(0).toString();
                 // splitting each part of the fullnamesearch into parts based on space
-                String[] parts = fullNameSearch.split(",");
+                String[] tapLocationName = fullNameSearch.split(",");
                 // checking if each part exists in a section
-                for (int z = 0; z < parts.length; ++z) {
+                for (int z = 0; z < tapLocationName.length-1; ++z) {
                     // making the part and section lowercase
-                    String partslower = parts[z].toLowerCase();
-                    String sectionlower = section.toLowerCase();
+                    String tapLocationNameLower = tapLocationName[z].toLowerCase();
+                    String listSearchSectionLower = listSearchSection.toLowerCase();
                     // checking if the section contains a part
-                    if (sectionlower.contains(partslower)) {
+                    if (listSearchSectionLower.contains(tapLocationNameLower)) {
+                        System.out.println(tapLocationNameLower);
+                        android.util.Log.i("first location match", list.get(0).toString());
                         //breaks aa for loop
-                        if (sectionlower.contains(",")) {
-                            String country[] = sectionlower.split(",");
-                            if (parts[parts.length-1].toLowerCase().contains(country[1])) {
-                                android.util.Log.i("list", list.get(0).toString());
+                        if (listSearchSectionLower.contains(",")) {
+                            String country[] = listSearchSectionLower.split(",");
+                            if (tapLocationName[tapLocationName.length-1].toLowerCase().contains(country[country.length-1])) {
+                                android.util.Log.i("list state found", list.get(0).toString());
+                                regionList = list;
                                 break aa;
                             }
+                            // if the country section for both are the same break
                         }
-                        else {
-                            if (parts[parts.length-1].toLowerCase().contains(sectionlower)) {
-                                android.util.Log.i("list", list.get(0).toString());
-                                break aa;
-                            }
-                        }
-                        // if the country section for both are the same break
+
                     }
                 }
             }
-            //Find nearest place on website
-            //Give them the details
+            //searches countries cases here
+            for (int i = 0; i < listOfCountries.size(); ++i) {
+                //gets country cases
+                List listCountryList = listOfCountries.get(i);
+                String listCountry = listCountryList.get(0).toString().toLowerCase();
+                // splitting each part of the fullnamesearch into parts based on space
+                String[] tapLocationFull = fullNameSearch.split(",");
+                String tapLocationCountry = tapLocationFull[tapLocationFull.length - 1].toLowerCase();
+                if (tapLocationCountry.equals(listCountry)) {
+                    android.util.Log.i("list country found", listCountryList.get(0).toString());
+                    countryList = listCountryList;
+                }
+            }
+
             tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(locationName));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
             locationAQI = locAQI.getJSONObject("data").get("aqi").toString();
             locationUV = locUV.get("value").toString();
@@ -357,11 +375,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         infoAQI.setText("AQI Level " + locationAQI);
         TextView infoUV = findViewById(R.id.info_uv);
         infoUV.setText("UV Index " + locationUV);
+        TextView region_name = findViewById(R.id.region_name);
+        TextView region_cases = findViewById(R.id.region_cases);
+        TextView country_name= findViewById(R.id.country_name);
+        TextView country_cases = findViewById(R.id.country_cases);
+        if (regionList.size() != 0) {
+            region_name.setText("Region: " + regionList.get(0));
+            region_cases.setText("Region Cases: " + regionList.get(1));
+        } else {
+            region_name.setText("No local coronavirus cases found");
+            region_cases.setText("");
+        }
+        if (regionList.size() != 0) {
+            country_name.setText("Country: " + countryList.get(0));
+            country_cases.setText("Country Cases: " + countryList.get(1));
+        } else {
+            country_name.setText("No regional coronavirus cases found");
+            country_cases.setText("");
+        }
+
         toggleInfoClick();
         Log.i("LatLong", tapMark.toString());
         System.out.println("OFF!");
 
     }
+
+
 
     /**
      *Adds a random point to the map
@@ -539,14 +578,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     builder.append(line);
                     builder = builder.reverse();
                     line = builder.toString();
-                    List<String> listCsv = Arrays.asList(line.split(",",5));
+                    List<String> listCsv = Arrays.asList(line.split(",",7));
                     for (int j = 0; j < listCsv.size(); j++) {
                         builder = new StringBuilder();
                         builder.append(listCsv.get(j));
                         builder = builder.reverse();
                         listCsv.set(j,builder.toString());
+
                     }
                     Collections.reverse(listCsv);
+                    String countryName[] = listCsv.get(0).split(",");
+                    String testCountry = countryName[countryName.length - 1];
+                    //replace US with United states
+                    if (testCountry.contains("US")) {
+                        countryName[countryName.length - 1] = "United States";
+                    }
+                    String country = String.join(",", countryName);
+                    listCsv.set(0,country);
                     listOfLocations.add(listCsv);
                 }
                 System.out.println(listOfLocations);
@@ -577,18 +625,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (int y = 0; y < listOfCountries.size(); ++y) {
                     if (listOfCountries.get(y).get(0).equals(tempCountry)) {
                         //Cases
-                        int value = Integer.valueOf(listOfCountries.get(y).get(1)) + Integer.valueOf(tempLocation.get(1));
-                        String intValue = Integer.toString(value);
+                        Double value = Double.valueOf(listOfCountries.get(y).get(1)) + Double.valueOf(tempLocation.get(1));
+                        String intValue = Double.toString(value);
                         listOfCountries.get(y).set(1,intValue);
 
                         //deaths
-                        value = Integer.valueOf(listOfCountries.get(y).get(2)) + Integer.valueOf(tempLocation.get(2));
-                        intValue = Integer.toString(value);
+                        value = Double.valueOf(listOfCountries.get(y).get(2)) + Double.valueOf(tempLocation.get(2));
+                        intValue = Double.toString(value);
                         listOfCountries.get(y).set(2,intValue);
 
                         //recovered
-                        value = Integer.valueOf(listOfCountries.get(y).get(3)) + Integer.valueOf(tempLocation.get(3));
-                        intValue = Integer.toString(value);
+                        value = Double.valueOf(listOfCountries.get(y).get(3)) + Double.valueOf(tempLocation.get(3));
+                        intValue = Double.toString(value);
                         listOfCountries.get(y).set(3,intValue);
                     }
                 }
