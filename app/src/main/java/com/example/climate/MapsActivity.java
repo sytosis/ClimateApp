@@ -24,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.common.util.ArrayUtils;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -309,6 +310,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             }
             fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
+            String[] tapLocationName = fullNameSearch.split(",");
+            //remove the event where the last part of the compound code is some numbers or else it wont be able to search the last index of code,
+            if (!tapLocationName[tapLocationName.length - 1].matches("[a-zA-Z]+")) {
+                tapLocationName[tapLocationName.length - 1] ="";
+                fullNameSearch = String.join(",", tapLocationName);
+                fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
+            }
             android.util.Log.i("Full location name",fullNameSearch);
             // for loop label
             aa:
@@ -321,7 +329,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // getting a part of list(1)
                 String listSearchSection = list.get(0).toString();
                 // splitting each part of the fullnamesearch into parts based on space
-                String[] tapLocationName = fullNameSearch.split(",");
                 // checking if each part exists in a section
                 for (int z = 0; z < tapLocationName.length-1; ++z) {
                     // making the part and section lowercase
@@ -381,12 +388,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         TextView country_cases = findViewById(R.id.country_cases);
         if (regionList.size() != 0) {
             region_name.setText("Region: " + regionList.get(0));
-            region_cases.setText("Region Cases: " + regionList.get(1));
+            region_cases.setText("Region Cases: " + regionList.get(2));
         } else {
             region_name.setText("No local coronavirus cases found");
             region_cases.setText("");
         }
-        if (regionList.size() != 0) {
+        if (countryList.size() != 0) {
             country_name.setText("Country: " + countryList.get(0));
             country_cases.setText("Country Cases: " + countryList.get(1));
         } else {
@@ -588,10 +595,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     Collections.reverse(listCsv);
                     String countryName[] = listCsv.get(0).split(",");
+                    //replaces any foreign characters in country
                     String testCountry = countryName[countryName.length - 1];
+                    System.out.println("country" + testCountry);
                     //replace US with United states
                     if (testCountry.contains("US")) {
                         countryName[countryName.length - 1] = "United States";
+                    }
+                    if (testCountry.contains("South")) {
+                        countryName[countryName.length - 1] = "South Korea";
                     }
                     String country = String.join(",", countryName);
                     listCsv.set(0,country);
