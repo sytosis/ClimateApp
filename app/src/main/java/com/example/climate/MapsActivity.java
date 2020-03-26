@@ -341,8 +341,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         //breaks aa for loop
                         if (listSearchSectionLower.contains(",")) {
                             String country[] = listSearchSectionLower.split(",");
-                            if (tapLocationName[tapLocationName.length-1].toLowerCase().contains(country[country.length-1])) {
-                                android.util.Log.i("list state found", list.get(0).toString());
+                            if (country[country.length-1].contains(tapLocationName[tapLocationName.length-1].toLowerCase())) {
+                                android.util.Log.i("list state found", list.toString());
                                 regionList = list;
                                 break aa;
                             }
@@ -360,7 +360,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // splitting each part of the fullnamesearch into parts based on space
                 String[] tapLocationFull = fullNameSearch.split(",");
                 String tapLocationCountry = tapLocationFull[tapLocationFull.length - 1].toLowerCase();
-                if (tapLocationCountry.equals(listCountry)) {
+                if (tapLocationCountry.contains(listCountry)) {
                     android.util.Log.i("list country found", listCountryList.get(0).toString());
                     countryList = listCountryList;
                 }
@@ -387,8 +387,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         TextView country_name= findViewById(R.id.country_name);
         TextView country_cases = findViewById(R.id.country_cases);
         if (regionList.size() != 0) {
-            region_name.setText("Region: " + regionList.get(0));
-            region_cases.setText("Region Cases: " + regionList.get(2));
+            region_name.setText("Locality: " + regionList.get(0));
+            region_cases.setText("Local Cases: " + regionList.get(1));
         } else {
             region_name.setText("No local coronavirus cases found");
             region_cases.setText("");
@@ -583,17 +583,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     StringBuilder builder = new StringBuilder();
                     builder.append(line);
-                    builder = builder.reverse();
                     line = builder.toString();
-                    List<String> listCsv = Arrays.asList(line.split(",",7));
-                    for (int j = 0; j < listCsv.size(); j++) {
-                        builder = new StringBuilder();
-                        builder.append(listCsv.get(j));
-                        builder = builder.reverse();
-                        listCsv.set(j,builder.toString());
+                    List<String> listCsv = new ArrayList<String>();
+                    //if it has quotation marks in it, it means theres comma that breaks the split for ","
+                    //this is tested by checking if the last character of the string has anything that isnt a letter eg a quotation mark
+                    if (line.substring(line.length() - 1).equals("\"")) {
+                        List<String> listQuotes = Arrays.asList(line.split("\""));
+                        listCsv.add(listQuotes.get(1));
+                        List<String> listCsvTemp;
+                        listCsvTemp = Arrays.asList(listQuotes.get(0).split(","));
+                        try {
+                            listCsvTemp = listCsvTemp.subList(listCsvTemp.size() - 4, listCsvTemp.size());
+                        } catch (IndexOutOfBoundsException e) {
+                            //for some reason south korea had more than the quotation marks at the end of the string
+                            System.out.println(e.toString());
+                            listCsvTemp = Arrays.asList(listQuotes.get(2).split(","));
+                            listCsvTemp = listCsvTemp.subList(listCsvTemp.size() - 4, listCsvTemp.size());
+                        }
+                        listCsv.add(listCsvTemp.get(0));
+                        listCsv.add(listCsvTemp.get(1));
+                        listCsv.add(listCsvTemp.get(2));
+                        listCsv.add(listCsvTemp.get(3));
+                    } else {
+                        listCsv = Arrays.asList(line.split(",",11));
+                        listCsv = listCsv.subList(6,listCsv.size());
+                        String confirmed = listCsv.get(0);
+                        String deaths = listCsv.get(1);
+                        String recovered = listCsv.get(2);
+                        String active = listCsv.get(3);
+                        String name = listCsv.get(4);
 
+                        listCsv.set(0,name);
+                        listCsv.set(1,confirmed);
+                        listCsv.set(2,deaths);
+                        listCsv.set(3,recovered);
+                        listCsv.set(4,active);
                     }
-                    Collections.reverse(listCsv);
+
+                    System.out.println(listCsv.toString());
+                    //Collections.reverse(listCsv);
                     String countryName[] = listCsv.get(0).split(",");
                     //replaces any foreign characters in country
                     String testCountry = countryName[countryName.length - 1];
@@ -619,9 +647,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         for (int i = 0; i < listOfLocations.size(); ++i) {
             String getCountry[] = listOfLocations.get(i).get(0).split(",");
             String tempCountry = getCountry[getCountry.length-1];
+            if (Character.isWhitespace(tempCountry.charAt(0))) {
+                System.out.println("tried to change country space");
+                tempCountry = tempCountry.substring(1);
+            }
             List<String> tempLocation = new ArrayList<>();
             boolean countryNotInList = true;
             tempLocation.add(tempCountry);
+            tempLocation.add(listOfLocations.get(i).get(1));
             tempLocation.add(listOfLocations.get(i).get(2));
             tempLocation.add(listOfLocations.get(i).get(3));
             tempLocation.add(listOfLocations.get(i).get(4));
@@ -629,7 +662,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (listOfCountries.get(x).get(0).equals(tempCountry)) {
                     countryNotInList = false ;
                 }
-
             }
             if (countryNotInList) {
                 listOfCountries.add(tempLocation);
@@ -650,6 +682,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         value = Double.valueOf(listOfCountries.get(y).get(3)) + Double.valueOf(tempLocation.get(3));
                         intValue = Double.toString(value);
                         listOfCountries.get(y).set(3,intValue);
+
+                        //active cases, sometimes its not recorded and tests if its 0 to double check.
+                        if (Double.valueOf(tempLocation.get(4)) != 0) {
+                            value = Double.valueOf(listOfCountries.get(y).get(4)) + Double.valueOf(tempLocation.get(4));
+                            intValue = Double.toString(value);
+                            listOfCountries.get(y).set(4,intValue);
+                        } else {
+                            value = Double.valueOf(listOfCountries.get(y).get(1)) - Double.valueOf(listOfCountries.get(y).get(2)) -  Double.valueOf(listOfCountries.get(y).get(3));
+                            intValue = Double.toString(value);
+                            listOfCountries.get(y).set(4,intValue);
+                            System.out.println("Active value was found to be 0, recalculating");
+                        }
+
                     }
                 }
             }
