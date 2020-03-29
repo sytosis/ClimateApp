@@ -51,11 +51,11 @@
         android:id = "@+id/text_box"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone"
+        android:visibility="visible"
         android:gravity="center">
 
         <LinearLayout
-            android:layout_width="350dp"
+            android:layout_width="375dp"
             android:layout_height="500dp"
             android:background="@color/white"
             android:gravity="center"
@@ -100,7 +100,15 @@
                 android:textSize="18sp"
                 android:textStyle="normal"
                 />
-            <TextView
+
+            <LinearLayout
+                android:layout_width="350dp"
+                android:layout_height="23dp"
+                android:background="@color/white"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
                 android:id="@+id/region_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -110,6 +118,20 @@
                 android:textSize="18sp"
                 android:textStyle="normal"
                 />
+
+                <ImageButton
+                    android:id="@+id/region_detailed_button"
+                    android:layout_width="23dp"
+                    android:layout_height="23dp"
+                    android:background="@drawable/myimage"
+                    android:onClick="toggleAdditional"
+                    android:contentDescription="Button"
+                    android:tag="region"
+                    android:visibility="gone"
+                    />
+
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/region_cases"
                 android:layout_width="wrap_content"
@@ -120,7 +142,14 @@
                 android:textSize="18sp"
                 android:textStyle="normal"
                 />
-            <TextView
+            <LinearLayout
+                android:layout_width="350dp"
+                android:layout_height="23dp"
+                android:background="@color/white"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
                 android:id="@+id/country_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -130,6 +159,19 @@
                 android:textSize="18sp"
                 android:textStyle="normal"
                 />
+
+                <ImageButton
+                    android:id="@+id/country_detailed_button"
+                    android:layout_width="23dp"
+                    android:layout_height="23dp"
+                    android:background="@drawable/myimage"
+                    android:onClick="toggleAdditional"
+                    android:tag="country"
+                    android:contentDescription="Button"
+                    android:visibility="gone"
+                    />
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/country_cases"
                 android:layout_width="wrap_content"
@@ -140,6 +182,7 @@
                 android:textSize="18sp"
                 android:textStyle="normal"
                 />
+
             <TextView
                 android:id="@+id/placeholder_7"
                 android:layout_width="wrap_content"
@@ -150,6 +193,7 @@
                 android:textSize="18sp"
                 android:textStyle="normal"
                 />
+
             <TextView
                 android:id="@+id/placeholder_9"
                 android:layout_width="wrap_content"
@@ -260,14 +304,128 @@
                 android:textSize="18sp"
                 android:textStyle="normal"
                 />
-
-
-
-
-
         </LinearLayout>
 
-
     </LinearLayout>
+    <LinearLayout
+        android:id="@+id/additional_layout"
+        android:layout_width="350dp"
+        android:layout_height="270dp"
+        android:background="@color/quantum_grey"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:orientation="vertical">
 
+        <ImageButton
+            android:id="@+id/additional_close_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:background="@drawable/myimage"
+            android:onClick="toggleAdditional"
+            android:tag = "close"
+            />
+
+        <TextView
+            android:id="@+id/blank_space"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+        <TextView
+            android:id="@+id/blank_space1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+
+        <TextView
+            android:id="@+id/additional_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/test"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+
+        <TextView
+            android:id="@+id/additional_total"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/test"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+
+        <TextView
+            android:id="@+id/additional_active"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/test"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+
+        <TextView
+            android:id="@+id/additional_death"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/test"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+
+        <TextView
+            android:id="@+id/additional_recovered"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="@string/test"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+
+        <TextView
+            android:id="@+id/blank_space2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+        <TextView
+            android:id="@+id/blank_space3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+        <TextView
+            android:id="@+id/blank_space4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textStyle="normal"
+            />
+    </LinearLayout>
 </RelativeLayout>

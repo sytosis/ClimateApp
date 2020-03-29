@@ -129,6 +129,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String locationName;
     String locationAQI;
     String locationUV;
+    String additionalCountryName;
+    String additionalCountryCases;
+    String additionalCountryActive;
+    String additionalCountryDeaths;
+    String additionalCountryRecovered;
+    String additionalRegionalName;
+    String additionalRegionalCases;
+    String additionalRegionalActive;
+    String additionalRegionalDeaths;
+    String additionalRegionalRecovered;
     boolean loading = false;
     ArrayList<LatLng> examplePoints = new ArrayList<>();
     ArrayList<Marker> exampleMarkers = new ArrayList<>();
@@ -190,6 +200,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             infoText.setVisibility(LinearLayout.GONE);
             ImageView loadingCircle = findViewById(R.id.loading_circle);
             loadingCircle.setVisibility(LinearLayout.GONE); // in case the loading bar still appears behind the info.
+        }
+    }
+
+    //toggles additional info
+    public void toggleAdditionalClick() {
+        //opens and closes the additional box
+        LinearLayout additionalBox = findViewById(R.id.additional_layout);
+        if (additionalBox.getVisibility() == LinearLayout.GONE) {
+            additionalBox.setVisibility(LinearLayout.VISIBLE);
+        } else if (additionalBox.getVisibility() == LinearLayout.VISIBLE) {
+            additionalBox.setVisibility(LinearLayout.GONE);
         }
     }
 
@@ -364,6 +385,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     android.util.Log.i("list country found", listCountryList.get(0).toString());
                     countryList = listCountryList;
                 }
+
+                //sometimes there's a region but not a country found, because the region name from the main api
+                //does not contain the country inside so this fixes it by going with the region name instead
+                //and checks if there is a region then it would use the region's name
+                if (regionList.size() != 0) {
+                    //if country wasn't already found, find it since there was a region
+                    if (countryList.size() == 0) {
+                        String[] regionListFull = regionList.get(0).toString().split(",");
+                        String regionFindCountry = regionListFull[regionListFull.length - 1].toLowerCase();
+                        if (regionFindCountry.equals(listCountry)) {
+                            android.util.Log.i("list country found through region search", listCountryList.get(0).toString());
+                            countryList = listCountryList;
+                        }
+                    }
+                }
             }
 
             tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(locationName));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
@@ -386,19 +422,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         TextView region_cases = findViewById(R.id.region_cases);
         TextView country_name= findViewById(R.id.country_name);
         TextView country_cases = findViewById(R.id.country_cases);
+        ImageButton regionButton = findViewById(R.id.region_detailed_button);
+        ImageButton countryButton = findViewById(R.id.country_detailed_button);
         if (regionList.size() != 0) {
-            region_name.setText("Locality: " + regionList.get(0));
+            String[] regionListFull = regionList.get(0).toString().split(",");
+            String regionName;
+            if (regionListFull.length > 2) {
+                if (regionList.get(0).toString().length() > 30) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append(regionListFull[regionListFull.length - 2]);
+                    stringBuilder.append(", ");
+                    stringBuilder.append(regionListFull[regionListFull.length - 1]);
+                    regionName = stringBuilder.toString();
+                } else {
+                    regionName = regionList.get(0).toString();
+                }
+            } else {
+                regionName = regionList.get(0).toString();
+            }
+
+            region_name.setText("Locality: " + regionName);
             region_cases.setText("Local Cases: " + regionList.get(1));
+            //populate the additional region cases
+            additionalRegionalName = regionList.get(0).toString();
+            additionalRegionalCases = regionList.get(1).toString();
+            additionalRegionalDeaths = regionList.get(2).toString();
+            additionalRegionalRecovered = regionList.get(3).toString();
+            additionalRegionalActive = regionList.get(4).toString();
+            regionButton.setVisibility(View.VISIBLE);
+
         } else {
             region_name.setText("No local coronavirus cases found");
             region_cases.setText("");
+            regionButton.setVisibility(View.GONE);
         }
         if (countryList.size() != 0) {
             country_name.setText("Country: " + countryList.get(0));
             country_cases.setText("Country Cases: " + countryList.get(1));
+            //populate the additional country cases
+            additionalCountryName = countryList.get(0).toString();
+            additionalCountryCases = countryList.get(1).toString();
+            additionalCountryDeaths = countryList.get(2).toString();
+            additionalCountryRecovered = countryList.get(3).toString();
+            additionalCountryActive = countryList.get(4).toString();
+            countryButton.setVisibility(View.VISIBLE);
         } else {
             country_name.setText("No regional coronavirus cases found");
             country_cases.setText("");
+            countryButton.setVisibility(View.GONE);
         }
 
         toggleInfoClick();
@@ -407,68 +478,33 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-
-
-    /**
-     *Adds a random point to the map
-     * @param number number of points to be added
-     */
-    public void addRandomPoints(int number) {
-        //clears the previous points and markers
-        for (LatLng l : examplePoints) {
-            l = null;
-        }
-        for (Marker m : exampleMarkers) {
-            m.remove();
-        }
-        exampleMarkers.clear();
-        examplePoints.clear();
-        double bottomVal = mMap.getProjection().getVisibleRegion().nearLeft.longitude*1.1;
-        double topVal = mMap.getProjection().getVisibleRegion().nearRight.longitude*0.9;
-        double leftVal = mMap.getProjection().getVisibleRegion().farLeft.latitude*1.1;
-        double rightVal = mMap.getProjection().getVisibleRegion().nearRight.latitude*0.9;
-        Random random = new Random();
-        int i = 0;
-        while (i < number) {
-            double taplat = leftVal + ((rightVal - leftVal) * random.nextDouble());
-            double taplong = bottomVal + ((topVal - bottomVal) * random.nextDouble());
-            try {
-                JSONObject tapLoc = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-                LatLng latlngTemp = new LatLng(taplat,taplong);
-                JSONObject actualLoc = readJsonFromUrl("https://maps.googleapis.com/maps/api/geocode/json?latlng="+taplat+","+taplong+"&key=AIzaSyC7BRVfrayl2FA12t9jwgXvffar_Du9xr0");
-                String location;
-                //gets data from geocode api so it finds actual location
-                try {
-                    location = actualLoc.getJSONObject("plus_code").get("compound_code").toString();
-                    //gets rid of any unwanted characters from this geocode api
-                    location = location.substring(8);
-                    char first = location.charAt(0);
-                    if (String.valueOf(first).equals(",")){
-                        location = location.substring(1);
-                    }
-                }
-                //if it fails then use location from WAQI api
-                catch (JSONException e) {
-                    location = tapLoc.getJSONObject("data").getJSONObject("city").get("name").toString();
-                }
-
-                //delete further strings if there are too many in it
-                if (location.length()>40){
-                    location = location.split("\\(")[0];
-                    location = location + "...";
-                }
-                Marker markerTemp = mMap.addMarker(new MarkerOptions().position(latlngTemp).title(location + " AQI:" + tapLoc.getJSONObject("data").get("aqi").toString()));
-                markerTemp.showInfoWindow();
-                android.util.Log.i("onMapClick", "markertemp" + markerTemp.toString());
-                examplePoints.add(latlngTemp);
-                exampleMarkers.add(markerTemp);
-                i++;
-            } catch (IOException | JSONException e) {
-                System.err.println(e);
-            }
+    public void toggleAdditional(View view) {
+        LinearLayout additionalLayout = findViewById(R.id.additional_layout);
+        String tag = view.getTag().toString();
+        TextView additionalName = findViewById(R.id.additional_name);
+        TextView additionalCases = findViewById(R.id.additional_total);
+        TextView additionalActive = findViewById(R.id.additional_active);
+        TextView additionalDeaths = findViewById(R.id.additional_death);
+        TextView additionalRecovered = findViewById(R.id.additional_recovered);
+        if (tag.equals("region")) {
+            additionalName.setText(additionalRegionalName);
+            additionalCases.setText("Total Cases: " + additionalRegionalCases);
+            additionalActive.setText("Active Cases: " + additionalRegionalActive);
+            additionalDeaths.setText("Deaths: " + additionalRegionalDeaths);
+            additionalRecovered.setText("Recovered: " + additionalRegionalRecovered);
+        } else if (tag.equals("country")) {
+            additionalName.setText(additionalCountryName);
+            additionalCases.setText("Total Cases: " + additionalCountryCases);
+            additionalActive.setText("Active Cases: " + additionalCountryActive);
+            additionalDeaths.setText("Deaths: " + additionalCountryDeaths);
+            additionalRecovered.setText("Recovered: " + additionalCountryRecovered);
         }
 
-
+        if (additionalLayout.getVisibility() == LinearLayout.GONE) {
+            additionalLayout.setVisibility(LinearLayout.VISIBLE);
+        } else if (additionalLayout.getVisibility() == LinearLayout.VISIBLE) {
+            additionalLayout.setVisibility(LinearLayout.GONE);
+        }
     }
 
     public static void main(String[] args) throws IOException, JSONException {
@@ -715,6 +751,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      */
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        //close the two open info bars
+        toggleInfoClick();
+        toggleAdditionalClick();
         mMap = googleMap;
         //Create a new event listener
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
