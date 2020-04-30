@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.common.api.Status;
@@ -123,7 +124,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     List<List<String>> listOfLocations = new ArrayList<>();
     List<List<String>> listOfCountries = new ArrayList<>();
     private GoogleMap mMap;
-    private boolean changedRecently = false;
     LatLng tapMark;
     Marker tapMarker;
     String locationName;
@@ -139,9 +139,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String additionalRegionalActive;
     String additionalRegionalDeaths;
     String additionalRegionalRecovered;
+    String currentDate;
+    String currentDateText;
     boolean loading = false;
-    ArrayList<LatLng> examplePoints = new ArrayList<>();
-    ArrayList<Marker> exampleMarkers = new ArrayList<>();
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
     private static final String TAG = "MainActivity";
@@ -161,10 +161,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return sb.toString();
     }
 
-    public void setChangedRecently(boolean bool) {
-        changedRecently = bool;
-    }
-
     //reads the json from a specific URL
     public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
         InputStream is = new URL(url).openStream();
@@ -178,49 +174,109 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    //toggles additional info layout through buttons
+    public void toggleAdditional(View view) {
+        LinearLayout additionalLayout = findViewById(R.id.additional_layout);
+        String tag = view.getTag().toString();
+        TextView additionalName = findViewById(R.id.additional_name);
+        TextView additionalCases = findViewById(R.id.additional_total);
+        TextView additionalActive = findViewById(R.id.additional_active);
+        TextView additionalDeaths = findViewById(R.id.additional_death);
+        TextView additionalRecovered = findViewById(R.id.additional_recovered);
+        if (tag.equals("region")) {
+            additionalName.setText(additionalRegionalName);
+            additionalCases.setText("Total Cases: " + additionalRegionalCases);
+            additionalActive.setText("Active Cases: " + additionalRegionalActive);
+            additionalDeaths.setText("Deaths: " + additionalRegionalDeaths);
+            additionalRecovered.setText("Recovered: " + additionalRegionalRecovered);
+        } else if (tag.equals("country")) {
+            additionalName.setText(additionalCountryName);
+            additionalCases.setText("Total Cases: " + additionalCountryCases);
+            additionalActive.setText("Active Cases: " + additionalCountryActive);
+            additionalDeaths.setText("Deaths: " + additionalCountryDeaths);
+            additionalRecovered.setText("Recovered: " + additionalCountryRecovered);
+        }
+
+        if (additionalLayout.getVisibility() == LinearLayout.GONE) {
+            additionalLayout.setVisibility(LinearLayout.VISIBLE);
+        } else if (additionalLayout.getVisibility() == LinearLayout.VISIBLE) {
+            additionalLayout.setVisibility(LinearLayout.GONE);
+        }
+    }
+    //toggles Info through buttons
     public void toggleInfo(View view) {
         //opens and closes the info text box
         LinearLayout infoText = findViewById(R.id.text_box);
         if (infoText.getVisibility() == LinearLayout.GONE) {
             infoText.setVisibility(LinearLayout.VISIBLE);
+            TextView dateText = findViewById(R.id.date_view);
+            dateText.setText("Covid-19 cases: " + currentDateText);
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
             infoText.setVisibility(LinearLayout.GONE);
-            ImageView loadingCircle = findViewById(R.id.loading_circle);
-            loadingCircle.setVisibility(LinearLayout.GONE); // in case the loading bar still appears behind the info.
         }
     }
 
-    //toggles info button on click
-    public void toggleInfoClick() {
+    public void toggleDate(View view) {
+        //opens and closes the info text box
+        LinearLayout dateLayout = findViewById(R.id.date_layout);
+        if (dateLayout.getVisibility() == LinearLayout.GONE) {
+            //forces Date UI to be directly under the Date shown on Info box
+            //finds the date Display Layout
+            LinearLayout dateDisplayLayout = findViewById(R.id.date_display_layout);
+            //finds the location of the layout on screen
+            int[] location = new int[2];
+            dateDisplayLayout.getLocationOnScreen(location);
+            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) dateLayout.getLayoutParams();
+            layoutParams.topMargin = location[1];
+            dateLayout.setLayoutParams(layoutParams);
+            dateLayout.setVisibility(LinearLayout.VISIBLE);
+        } else if (dateLayout.getVisibility() == LinearLayout.VISIBLE) {
+            dateLayout.setVisibility(LinearLayout.GONE);
+        }
+    }
+
+    //toggles info with specified selection
+    public void toggleInfoClick(Boolean bool) {
         //opens and closes the info text box
         LinearLayout infoText = findViewById(R.id.text_box);
-        if (infoText.getVisibility() == LinearLayout.GONE) {
+        if (bool) {
             infoText.setVisibility(LinearLayout.VISIBLE);
-        } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
+            TextView dateText = findViewById(R.id.date_view);
+            dateText.setText("Covid-19 cases: " + currentDateText);
+        } else {
             infoText.setVisibility(LinearLayout.GONE);
-            ImageView loadingCircle = findViewById(R.id.loading_circle);
-            loadingCircle.setVisibility(LinearLayout.GONE); // in case the loading bar still appears behind the info.
         }
     }
 
-    //toggles additional info
-    public void toggleAdditionalClick() {
+    //toggles additional info with specified selection
+    public void toggleAdditionalClick(Boolean bool) {
         //opens and closes the additional box
         LinearLayout additionalBox = findViewById(R.id.additional_layout);
-        if (additionalBox.getVisibility() == LinearLayout.GONE) {
+        if (bool) {
             additionalBox.setVisibility(LinearLayout.VISIBLE);
-        } else if (additionalBox.getVisibility() == LinearLayout.VISIBLE) {
+        } else {
             additionalBox.setVisibility(LinearLayout.GONE);
         }
     }
 
-    //toggles loading circle
-    public void toggleLoadingCircle() {
+    //toggles date with specified selection
+    public void toggleDateClick(Boolean bool) {
+        //opens and closes the additional box
+        LinearLayout dateLayout = findViewById(R.id.date_layout);
+        if (bool) {
+            dateLayout.setVisibility(LinearLayout.VISIBLE);
+        } else {
+            dateLayout.setVisibility(LinearLayout.GONE);
+        }
+    }
+
+    //toggles loading circle with selection
+    public void toggleLoadingCircle(Boolean bool) {
         //opens and closes the info text box
         ImageView loadingCircle = findViewById(R.id.loading_circle);
-        if (loadingCircle.getVisibility() == LinearLayout.GONE) {
+        if (bool) {
             loadingCircle.setVisibility(LinearLayout.VISIBLE);
-        } else if (loadingCircle.getVisibility() == LinearLayout.VISIBLE) {
+        } else {
             loadingCircle.setVisibility(LinearLayout.GONE);
         }
     }
@@ -242,7 +298,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 double myLat = location.getLatitude();
                 // Add a location on the map
                 LatLng current = new LatLng(myLat, myLong);
-                toggleLoadingCircle();
+                toggleLoadingCircle(true);
                 tapMark = current;
                 timer = new Timer();
                 timer.schedule(new TimerTask() {
@@ -257,7 +313,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             public void run() {
                                 // This code will always run on the UI thread, therefore is safe to modify UI elements.
                                 changeInfo("0",false);
-                                toggleLoadingCircle();
+                                toggleLoadingCircle(false);
                                 timer.purge();
                                 timer.cancel();
                                 loading = false;
@@ -472,39 +528,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             countryButton.setVisibility(View.GONE);
         }
 
-        toggleInfoClick();
+        toggleInfoClick(true);
         Log.i("LatLong", tapMark.toString());
         System.out.println("OFF!");
 
-    }
-
-    public void toggleAdditional(View view) {
-        LinearLayout additionalLayout = findViewById(R.id.additional_layout);
-        String tag = view.getTag().toString();
-        TextView additionalName = findViewById(R.id.additional_name);
-        TextView additionalCases = findViewById(R.id.additional_total);
-        TextView additionalActive = findViewById(R.id.additional_active);
-        TextView additionalDeaths = findViewById(R.id.additional_death);
-        TextView additionalRecovered = findViewById(R.id.additional_recovered);
-        if (tag.equals("region")) {
-            additionalName.setText(additionalRegionalName);
-            additionalCases.setText("Total Cases: " + additionalRegionalCases);
-            additionalActive.setText("Active Cases: " + additionalRegionalActive);
-            additionalDeaths.setText("Deaths: " + additionalRegionalDeaths);
-            additionalRecovered.setText("Recovered: " + additionalRegionalRecovered);
-        } else if (tag.equals("country")) {
-            additionalName.setText(additionalCountryName);
-            additionalCases.setText("Total Cases: " + additionalCountryCases);
-            additionalActive.setText("Active Cases: " + additionalCountryActive);
-            additionalDeaths.setText("Deaths: " + additionalCountryDeaths);
-            additionalRecovered.setText("Recovered: " + additionalCountryRecovered);
-        }
-
-        if (additionalLayout.getVisibility() == LinearLayout.GONE) {
-            additionalLayout.setVisibility(LinearLayout.VISIBLE);
-        } else if (additionalLayout.getVisibility() == LinearLayout.VISIBLE) {
-            additionalLayout.setVisibility(LinearLayout.GONE);
-        }
     }
 
     public static void main(String[] args) throws IOException, JSONException {
@@ -536,7 +563,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             public void onPlaceSelected(Place place) {
                 //find AQI based on search result
                  tapMark = place.getLatLng();
-                 toggleLoadingCircle();
+                 toggleLoadingCircle(true);
                  final String name = place.getName();
                  timer = new Timer();
                  timer.schedule(new TimerTask() {
@@ -551,7 +578,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             public void run() {
                                 // This code will always run on the UI thread, therefore is safe to modify UI elements.
                                 changeInfo(name,true);
-                                toggleLoadingCircle();
+                                toggleLoadingCircle(false);
                                 timer.purge();
                                 timer.cancel();
                                 loading = false;
@@ -575,7 +602,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         try {
             //Get current date
             Date currentTime = Calendar.getInstance().getTime();
-
             //calender setup
             Calendar cal = Calendar.getInstance();
             int i = 0;
@@ -586,8 +612,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //minus "i" days
                 cal.setTime(currentTime);
                 cal.add(Calendar.DATE, -i);
-                Date date= cal.getTime();
+                Date date = cal.getTime();
                 SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+                SimpleDateFormat df2 = new SimpleDateFormat("dd/MM/yyyy");
+                String textDate = df2.format(date);
                 String formattedDate = df.format(date);
                 csvurl = original + formattedDate + ".csv";
                 URL testUrl = new URL(csvurl);
@@ -596,6 +624,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 String response = Integer.toString(responseCode);
                 if (responseCode == 200) {
                     break;
+                } else {
+                    currentDate = formattedDate;
+                    currentDateText = textDate;
                 }
                 Log.i("response code", response);
                 Log.i("URL address", csvurl);
@@ -752,8 +783,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         //close the two open info bars
-        toggleInfoClick();
-        toggleAdditionalClick();
+        toggleInfoClick(false);
+        toggleAdditionalClick(false);
+        toggleDateClick(false);
+        //specifies googleMaps
         mMap = googleMap;
         //Create a new event listener
         googleMap.setOnMapClickListener(new GoogleMap.OnMapClickListener()
@@ -767,7 +800,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     Double taplat = arg0.latitude;
                     Double taplong = arg0.longitude;
                     tapMark = new LatLng(taplat,taplong);
-                    toggleLoadingCircle();
+                    toggleLoadingCircle(true);
                     loading = true;
                     timer = new Timer();
                     timer.schedule(new TimerTask() {
@@ -782,7 +815,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 public void run() {
                                     // This code will always run on the UI thread, therefore is safe to modify UI elements.
                                     changeInfo("0",false);
-                                    toggleLoadingCircle();
+                                    toggleLoadingCircle(false);
                                     timer.purge();
                                     timer.cancel();
                                     loading = false;
