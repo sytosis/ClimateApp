@@ -31,6 +31,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -214,8 +215,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LinearLayout infoText = findViewById(R.id.text_box);
         if (infoText.getVisibility() == LinearLayout.GONE) {
             infoText.setVisibility(LinearLayout.VISIBLE);
+            //disable google map scrolling and moving when info is open
+            mMap.getUiSettings().setScrollGesturesEnabled(false);
+            mMap.getUiSettings().setZoomGesturesEnabled(false);
+            mMap.getUiSettings().setTiltGesturesEnabled(false);
+            mMap.getUiSettings().setRotateGesturesEnabled(false);
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
             infoText.setVisibility(LinearLayout.GONE);
+            //enable scrolling
+            mMap.getUiSettings().setScrollGesturesEnabled(true);
+            mMap.getUiSettings().setZoomGesturesEnabled(true);
+            mMap.getUiSettings().setTiltGesturesEnabled(true);
+            mMap.getUiSettings().setRotateGesturesEnabled(true);
         }
     }
 
@@ -246,8 +257,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             infoText.setVisibility(LinearLayout.VISIBLE);
             TextView dateText = findViewById(R.id.date_view);
             dateText.setText("Covid-19 cases: " + currentDateText);
+            //disable google map scrolling and moving when info is open
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(false);
+                mMap.getUiSettings().setZoomGesturesEnabled(false);
+                mMap.getUiSettings().setTiltGesturesEnabled(false);
+                mMap.getUiSettings().setRotateGesturesEnabled(false);
+            }
         } else {
             infoText.setVisibility(LinearLayout.GONE);
+            //re-enables scrolling
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(true);
+                mMap.getUiSettings().setZoomGesturesEnabled(true);
+                mMap.getUiSettings().setTiltGesturesEnabled(true);
+                mMap.getUiSettings().setRotateGesturesEnabled(true);
+            }
+
         }
     }
 
@@ -756,10 +782,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                  timer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        // Your logic here...
-
-                        // When you need to modify a UI element, do so on the UI thread.
-                        // 'getActivity()' is required as this is being ran from a Fragment.
                         MapsActivity.this.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -981,7 +1003,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onMapClick(LatLng arg0)
             {
-                if (!loading) {
+                //only do this if the Info Text is not visible
+                LinearLayout infoText = findViewById(R.id.text_box);
+                if (!loading && infoText.getVisibility() == LinearLayout.GONE) {
                     //sets lat and long to a variable
                     Double taplat = arg0.latitude;
                     Double taplong = arg0.longitude;
