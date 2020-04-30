@@ -123,6 +123,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     List<List<String>> listOfLocations = new ArrayList<>();
     List<List<String>> listOfCountries = new ArrayList<>();
+    List<List<String>> listOfLocationsTemp = new ArrayList<>();
+    List<List<String>> listOfCountriesTemp = new ArrayList<>();
     private GoogleMap mMap;
     LatLng tapMark;
     Marker tapMarker;
@@ -623,10 +625,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 int responseCode = huc.getResponseCode();
                 String response = Integer.toString(responseCode);
                 if (responseCode == 200) {
-                    break;
-                } else {
                     currentDate = formattedDate;
                     currentDateText = textDate;
+                    break;
                 }
                 Log.i("response code", response);
                 Log.i("URL address", csvurl);
