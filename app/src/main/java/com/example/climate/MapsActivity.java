@@ -257,6 +257,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             infoText.setVisibility(LinearLayout.VISIBLE);
             TextView dateText = findViewById(R.id.date_view);
             dateText.setText("Covid-19 cases: " + currentDateText);
+            String dateTempValues[] = currentDateText.split("/");
+            int dateValues[] = new int[3];
+            for(int i=0; i<dateTempValues.length; i++) {
+                dateValues[i] = Integer.parseInt(dateTempValues[i]);
+            }
+            //sets the defaults for date picker
+            DatePicker picker = findViewById(R.id.datePicker);
+            picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
+            //picker.setMaxDate();
             //disable google map scrolling and moving when info is open
             if (mMap != null) {
                 mMap.getUiSettings().setScrollGesturesEnabled(false);
