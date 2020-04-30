@@ -277,7 +277,7 @@
                     />
 
                 <DatePicker
-                    android:id="@+id/datePicker1"
+                    android:id="@+id/datePicker"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:datePickerMode="spinner"
@@ -288,7 +288,7 @@
                     android:layout_width="23dp"
                     android:layout_height="23dp"
                     android:background="@drawable/myimage"
-                    android:onClick="toggleAdditional"
+                    android:onClick="datePick"
                     android:contentDescription="Button"
                     android:tag="dateButton"
                     />

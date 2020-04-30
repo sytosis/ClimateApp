@@ -18,6 +18,7 @@ import android.os.StrictMode;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -129,6 +130,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     LatLng tapMark;
     Marker tapMarker;
     String locationName;
+    String fullLocationName[];
+    String fullLocationNameSearch;
     String locationAQI;
     String locationUV;
     String additionalCountryName;
@@ -211,8 +214,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LinearLayout infoText = findViewById(R.id.text_box);
         if (infoText.getVisibility() == LinearLayout.GONE) {
             infoText.setVisibility(LinearLayout.VISIBLE);
-            TextView dateText = findViewById(R.id.date_view);
-            dateText.setText("Covid-19 cases: " + currentDateText);
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
             infoText.setVisibility(LinearLayout.GONE);
         }
@@ -283,6 +284,171 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    //code for when the user picks a date
+    public void datePick(View view) {
+        listOfLocationsTemp.clear();
+        listOfCountriesTemp.clear();
+        DatePicker picker = findViewById(R.id.datePicker);
+        System.out.println(picker.getDayOfMonth() + "," + picker.getMonth() + "," + picker.getYear());
+        //sets up the formatted date based on picker
+        String monthString =  String.valueOf(picker.getMonth() + 1);
+        if (monthString.length() == 1) {
+            monthString = "0" + monthString;
+        }
+        String dayString =  String.valueOf(picker.getDayOfMonth());
+        if (dayString.length() == 1) {
+            dayString = "0" + dayString;
+        }
+        String formattedDate = monthString + "-" + dayString + "-" + picker.getYear();
+        //fill temp list with data
+        try {
+            String csvurl = "";
+            String original = "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/";
+            csvurl = original + formattedDate + ".csv";
+            URL testUrl = new URL(csvurl);
+            HttpURLConnection huc = (HttpURLConnection) testUrl.openConnection();
+            int responseCode = huc.getResponseCode();
+            String response = Integer.toString(responseCode);
+            if (responseCode == 200) {
+                android.util.Log.i("Picker Date found", "True");
+            }
+            //Reading csv url
+            URL url = new URL(csvurl);
+            try(InputStream in = url.openStream();
+                InputStreamReader inr = new InputStreamReader(in);
+                BufferedReader br = new BufferedReader(inr)) {
+                String line = br.readLine();
+                while(line != null) {
+                    line = br.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    char tester = line.charAt(0);
+                    if (!Character.isLetter(tester)) {
+                        line = line.substring(1);
+                    }
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(line);
+                    line = builder.toString();
+                    List<String> listCsv = new ArrayList<String>();
+                    //if it has quotation marks in it, it means theres comma that breaks the split for ","
+                    //this is tested by checking if the last character of the string has anything that isnt a letter eg a quotation mark
+                    if (line.substring(line.length() - 1).equals("\"")) {
+                        List<String> listQuotes = Arrays.asList(line.split("\""));
+                        listCsv.add(listQuotes.get(1));
+                        List<String> listCsvTemp;
+                        listCsvTemp = Arrays.asList(listQuotes.get(0).split(","));
+                        try {
+                            listCsvTemp = listCsvTemp.subList(listCsvTemp.size() - 4, listCsvTemp.size());
+                        } catch (IndexOutOfBoundsException e) {
+                            //for some reason south korea had more than the quotation marks at the end of the string
+                            System.out.println(e.toString());
+                            listCsvTemp = Arrays.asList(listQuotes.get(2).split(","));
+                            listCsvTemp = listCsvTemp.subList(listCsvTemp.size() - 4, listCsvTemp.size());
+                        }
+                        listCsv.add(listCsvTemp.get(0));
+                        listCsv.add(listCsvTemp.get(1));
+                        listCsv.add(listCsvTemp.get(2));
+                        listCsv.add(listCsvTemp.get(3));
+                    } else {
+                        listCsv = Arrays.asList(line.split(",",11));
+                        listCsv = listCsv.subList(6,listCsv.size());
+                        String confirmed = listCsv.get(0);
+                        String deaths = listCsv.get(1);
+                        String recovered = listCsv.get(2);
+                        String active = listCsv.get(3);
+                        String name = listCsv.get(4);
+
+                        listCsv.set(0,name);
+                        listCsv.set(1,confirmed);
+                        listCsv.set(2,deaths);
+                        listCsv.set(3,recovered);
+                        listCsv.set(4,active);
+                    }
+
+                    System.out.println(listCsv.toString());
+                    //Collections.reverse(listCsv);
+                    String countryName[] = listCsv.get(0).split(",");
+                    //replaces any foreign characters in country
+                    String testCountry = countryName[countryName.length - 1];
+                    System.out.println("country" + testCountry);
+                    //replace US with United states
+                    if (testCountry.contains("US")) {
+                        countryName[countryName.length - 1] = "United States";
+                    }
+                    if (testCountry.contains("South")) {
+                        countryName[countryName.length - 1] = "South Korea";
+                    }
+                    String country = String.join(",", countryName);
+                    listCsv.set(0,country);
+                    listOfLocationsTemp.add(listCsv);
+                }
+                System.out.println(listOfLocationsTemp);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+//setting up country data through list of locations done above
+        for (int i = 0; i < listOfLocationsTemp.size(); ++i) {
+            String getCountry[] = listOfLocationsTemp.get(i).get(0).split(",");
+            String tempCountry = getCountry[getCountry.length-1];
+            if (Character.isWhitespace(tempCountry.charAt(0))) {
+                System.out.println("tried to change country space");
+                tempCountry = tempCountry.substring(1);
+            }
+            List<String> tempLocation = new ArrayList<>();
+            boolean countryNotInList = true;
+            tempLocation.add(tempCountry);
+            tempLocation.add(listOfLocationsTemp.get(i).get(1));
+            tempLocation.add(listOfLocationsTemp.get(i).get(2));
+            tempLocation.add(listOfLocationsTemp.get(i).get(3));
+            tempLocation.add(listOfLocationsTemp.get(i).get(4));
+            for (int x = 0; x < listOfCountriesTemp.size(); ++x) {
+                if (listOfCountriesTemp.get(x).get(0).equals(tempCountry)) {
+                    countryNotInList = false ;
+                }
+            }
+            if (countryNotInList) {
+                listOfCountriesTemp.add(tempLocation);
+            } else {
+                for (int y = 0; y < listOfCountriesTemp.size(); ++y) {
+                    if (listOfCountriesTemp.get(y).get(0).equals(tempCountry)) {
+                        //Cases
+                        Double value = Double.valueOf(listOfCountriesTemp.get(y).get(1)) + Double.valueOf(tempLocation.get(1));
+                        String intValue = Double.toString(value);
+                        listOfCountriesTemp.get(y).set(1,intValue);
+
+                        //deaths
+                        value = Double.valueOf(listOfCountriesTemp.get(y).get(2)) + Double.valueOf(tempLocation.get(2));
+                        intValue = Double.toString(value);
+                        listOfCountriesTemp.get(y).set(2,intValue);
+
+                        //recovered
+                        value = Double.valueOf(listOfCountriesTemp.get(y).get(3)) + Double.valueOf(tempLocation.get(3));
+                        intValue = Double.toString(value);
+                        listOfCountriesTemp.get(y).set(3,intValue);
+
+                        //active cases, sometimes its not recorded and tests if its 0 to double check.
+                        if (Double.valueOf(tempLocation.get(4)) != 0) {
+                            value = Double.valueOf(listOfCountriesTemp.get(y).get(4)) + Double.valueOf(tempLocation.get(4));
+                            intValue = Double.toString(value);
+                            listOfCountriesTemp.get(y).set(4,intValue);
+                        } else {
+                            value = Double.valueOf(listOfCountriesTemp.get(y).get(1)) - Double.valueOf(listOfCountriesTemp.get(y).get(2)) -  Double.valueOf(listOfCountriesTemp.get(y).get(3));
+                            intValue = Double.toString(value);
+                            listOfCountriesTemp.get(y).set(4,intValue);
+                            System.out.println("Active value was found to be 0, recalculating");
+                        }
+
+                    }
+                }
+            }
+        }
+        System.out.println(listOfCountriesTemp);
+        changeInfo("0",false,true);
+        toggleDateClick(false);
+    }
     public void myLocation(View view) {
         //finds current device location
         LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
@@ -314,7 +480,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             @Override
                             public void run() {
                                 // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                                changeInfo("0",false);
+                                changeInfo("0",false,false);
                                 toggleLoadingCircle(false);
                                 timer.purge();
                                 timer.cancel();
@@ -334,139 +500,160 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public void changeInfo (String loc, boolean move){
+    public void changeInfo (String loc, boolean move, boolean tempDate){
         System.out.println("ON!");
+        toggleInfoClick(true);
         //finds the nearest AQI based on lat and long, before adding it to the map
         double taplat = tapMark.latitude;
         double taplong = tapMark.longitude;
         List regionList = new ArrayList();
         List countryList = new ArrayList();
-        try {
-            JSONObject locAQI = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
-            Log.i("First part", tapMark.toString());
-            JSONObject locUV = readJsonFromUrl("https://api.openweathermap.org/data/2.5/uvi?appid=49a87b5d0f10027bd80b4cabb1bd2132&lat="+taplat+"&lon="+taplong);
-            Log.i("Second part", tapMark.toString());
-            //only remove the previous marker if it exists
-            if (tapMarker != null) {
-                tapMarker.remove();
-            }
-            JSONObject actualLoc = readJsonFromUrl("https://maps.googleapis.com/maps/api/geocode/json?latlng="+taplat+","+taplong+"&key=AIzaSyC7BRVfrayl2FA12t9jwgXvffar_Du9xr0");
-            if (loc.equals("0")) {
-                String location;
-                //gets data from geocode api so it finds actual location
-                try {
-                    location = actualLoc.getJSONObject("plus_code").get("compound_code").toString();
-                    //gets rid of any unwanted characters from this geocode api
-                    location = location.substring(8);
-                    char first = location.charAt(0);
-                    if (String.valueOf(first).equals(",")){
-                        location = location.substring(1);
+        if (!tempDate) {
+            try {
+                JSONObject locAQI = readJsonFromUrl("https://api.waqi.info/feed/geo:"+taplat+";"+taplong+"/?token=489dc5c42ae0d28cddba1c0f0818b15cf64d4dc0");
+                Log.i("First part", tapMark.toString());
+                JSONObject locUV = readJsonFromUrl("https://api.openweathermap.org/data/2.5/uvi?appid=49a87b5d0f10027bd80b4cabb1bd2132&lat="+taplat+"&lon="+taplong);
+                Log.i("Second part", tapMark.toString());
+                //only remove the previous marker if it exists
+                if (tapMarker != null) {
+                    tapMarker.remove();
+                }
+                JSONObject actualLoc = readJsonFromUrl("https://maps.googleapis.com/maps/api/geocode/json?latlng="+taplat+","+taplong+"&key=AIzaSyC7BRVfrayl2FA12t9jwgXvffar_Du9xr0");
+                if (loc.equals("0")) {
+                    String location;
+                    //gets data from geocode api so it finds actual location
+                    try {
+                        location = actualLoc.getJSONObject("plus_code").get("compound_code").toString();
+                        //gets rid of any unwanted characters from this geocode api
+                        location = location.substring(8);
+                        char first = location.charAt(0);
+                        if (String.valueOf(first).equals(",")){
+                            location = location.substring(1);
+                        }
                     }
+                    //if it fails then use location from WAQI api
+                    catch (Exception e) {
+                        location = locAQI.getJSONObject("data").getJSONObject("city").get("name").toString();
+                        android.util.Log.i("Location AQI Error ",e.toString());
+                    }
+                    //delete further strings if there are too many in it
+                    if (location.length()>40){
+                        location = location.split("\\(")[0];
+                        location = location + "...";
+                    }
+                    locationName = location;
+                } else {
+                    locationName = loc;
                 }
-                //if it fails then use location from WAQI api
-                catch (Exception e) {
-                    location = locAQI.getJSONObject("data").getJSONObject("city").get("name").toString();
-                    android.util.Log.i("Location AQI Error ",e.toString());
-                }
-                //delete further strings if there are too many in it
-                if (location.length()>40){
-                    location = location.split("\\(")[0];
-                    location = location + "...";
-                }
-                locationName = location;
-            } else {
-                locationName = loc;
-            }
-            JSONArray fullNameArray = actualLoc.getJSONArray("results").getJSONObject(1).getJSONArray("address_components");
-            String fullNameSearch = "";
-            for (int i = 0; i < fullNameArray.length(); i++) {
-                JSONObject namePart = fullNameArray.getJSONObject(i);
-                String tempName = namePart.get("long_name").toString();
-                if (!tempName.matches("\\d+")) {
-                    fullNameSearch += namePart.get("long_name");
-                    fullNameSearch += ",";
-                }
+                JSONArray fullNameArray = actualLoc.getJSONArray("results").getJSONObject(1).getJSONArray("address_components");
+                String fullNameSearch = "";
+                for (int i = 0; i < fullNameArray.length(); i++) {
+                    JSONObject namePart = fullNameArray.getJSONObject(i);
+                    String tempName = namePart.get("long_name").toString();
+                    if (!tempName.matches("\\d+")) {
+                        fullNameSearch += namePart.get("long_name");
+                        fullNameSearch += ",";
+                    }
 
-            }
-            fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
-            String[] tapLocationName = fullNameSearch.split(",");
-            //remove the event where the last part of the compound code is some numbers or else it wont be able to search the last index of code,
-            if (!tapLocationName[tapLocationName.length - 1].matches("[a-zA-Z]+")) {
-                tapLocationName[tapLocationName.length - 1] ="";
-                fullNameSearch = String.join(",", tapLocationName);
+                }
                 fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
-            }
-            android.util.Log.i("Full location name",fullNameSearch);
-            // for loop label
-            aa:
-            // searches all the lists(1) in the list of lists(0)
-            //calculate state cases here
-            for (int i = 0; i < listOfLocations.size(); ++i) {
-                //getting list(1)
-                List list = listOfLocations.get(i);
-                // search all parts in the list(1)
-                // getting a part of list(1)
-                String listSearchSection = list.get(0).toString();
-                // splitting each part of the fullnamesearch into parts based on space
-                // checking if each part exists in a section
-                for (int z = 0; z < tapLocationName.length-1; ++z) {
-                    // making the part and section lowercase
-                    String tapLocationNameLower = tapLocationName[z].toLowerCase();
-                    String listSearchSectionLower = listSearchSection.toLowerCase();
-                    // checking if the section contains a part
-                    if (listSearchSectionLower.contains(tapLocationNameLower)) {
-                        System.out.println(tapLocationNameLower);
-                        android.util.Log.i("first location match", list.get(0).toString());
-                        //breaks aa for loop
-                        if (listSearchSectionLower.contains(",")) {
-                            String country[] = listSearchSectionLower.split(",");
-                            if (country[country.length-1].contains(tapLocationName[tapLocationName.length-1].toLowerCase())) {
-                                android.util.Log.i("list state found", list.toString());
-                                regionList = list;
-                                break aa;
-                            }
-                            // if the country section for both are the same break
-                        }
-
-                    }
+                String[] tapLocationName = fullNameSearch.split(",");
+                //remove the event where the last part of the compound code is some numbers or else it wont be able to search the last index of code,
+                if (!tapLocationName[tapLocationName.length - 1].matches("[a-zA-Z]+")) {
+                    tapLocationName[tapLocationName.length - 1] ="";
+                    fullNameSearch = String.join(",", tapLocationName);
+                    fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
                 }
+                android.util.Log.i("Full location name",fullNameSearch);
+                fullLocationName = tapLocationName;
+                fullLocationNameSearch = fullNameSearch;
+                locationAQI = locAQI.getJSONObject("data").get("aqi").toString();
+                locationUV = locUV.get("value").toString();
+                tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(locationName));//Here is code for trying to change icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
+                tapMarker.showInfoWindow();
+            } catch (IOException | JSONException e) {
+                System.err.println(e);
             }
-            //searches countries cases here
-            for (int i = 0; i < listOfCountries.size(); ++i) {
-                //gets country cases
-                List listCountryList = listOfCountries.get(i);
-                String listCountry = listCountryList.get(0).toString().toLowerCase();
-                // splitting each part of the fullnamesearch into parts based on space
-                String[] tapLocationFull = fullNameSearch.split(",");
-                String tapLocationCountry = tapLocationFull[tapLocationFull.length - 1].toLowerCase();
-                if (tapLocationCountry.contains(listCountry)) {
-                    android.util.Log.i("list country found", listCountryList.get(0).toString());
-                    countryList = listCountryList;
-                }
-
-                //sometimes there's a region but not a country found, because the region name from the main api
-                //does not contain the country inside so this fixes it by going with the region name instead
-                //and checks if there is a region then it would use the region's name
-                if (regionList.size() != 0) {
-                    //if country wasn't already found, find it since there was a region
-                    if (countryList.size() == 0) {
-                        String[] regionListFull = regionList.get(0).toString().split(",");
-                        String regionFindCountry = regionListFull[regionListFull.length - 1].toLowerCase();
-                        if (regionFindCountry.equals(listCountry)) {
-                            android.util.Log.i("list country found through region search", listCountryList.get(0).toString());
-                            countryList = listCountryList;
-                        }
-                    }
-                }
-            }
-
-            tapMarker = mMap.addMarker(new MarkerOptions().position(tapMark).title(locationName));//Here is code for trying to chance icon.icon(BitmapDescriptorFactory.fromResource(R.drawable.marker_for_map_purpul))););
-            locationAQI = locAQI.getJSONObject("data").get("aqi").toString();
-            locationUV = locUV.get("value").toString();
-            tapMarker.showInfoWindow();
-        } catch (IOException | JSONException e) {
-            System.err.println(e);
         }
+        List<List<String>> locationList;
+        List<List<String>> countriesList;
+        if (tempDate) {
+            locationList = listOfLocationsTemp;
+            countriesList = listOfCountriesTemp;
+            System.out.println("Using Temp");
+            DatePicker picker = findViewById(R.id.datePicker);
+            //change the date to match this date
+            TextView dateText = findViewById(R.id.date_view);
+            dateText.setText("Covid-19 cases: " + picker.getDayOfMonth() + "/" + picker.getMonth() + 1 + "/" + picker.getYear());
+        } else {
+            System.out.println("Using Main");
+            locationList = listOfLocations;
+            countriesList = listOfCountries;
+        }
+        // for loop label
+        aa:
+        // searches all the lists(1) in the list of lists(0)
+        // calculate state cases here
+        for (int i = 0; i < locationList.size(); ++i) {
+            //getting list(1)
+            List list = locationList.get(i);
+            // search all parts in the list(1)
+            // getting a part of list(1)
+            String listSearchSection = list.get(0).toString();
+            // splitting each part of the fullnamesearch into parts based on space
+            // checking if each part exists in a section
+            for (int z = 0; z < fullLocationName.length-1; ++z) {
+                // making the part and section lowercase
+                String tapLocationNameLower = fullLocationName[z].toLowerCase();
+                String listSearchSectionLower = listSearchSection.toLowerCase();
+                // checking if the section contains a part
+                if (listSearchSectionLower.contains(tapLocationNameLower)) {
+                    System.out.println(tapLocationNameLower);
+                    android.util.Log.i("first location match", list.get(0).toString());
+                    //breaks aa for loop
+                    if (listSearchSectionLower.contains(",")) {
+                        String country[] = listSearchSectionLower.split(",");
+                        if (country[country.length-1].contains(fullLocationName[fullLocationName.length-1].toLowerCase())) {
+                            android.util.Log.i("list state found", list.toString());
+                            regionList = list;
+                            break aa;
+                        }
+                        // if the country section for both are the same break
+                    }
+
+                }
+            }
+        }
+        //searches countries cases here
+        for (int i = 0; i < countriesList.size(); ++i) {
+            //gets country cases
+            List listCountryList = countriesList.get(i);
+            String listCountry = listCountryList.get(0).toString().toLowerCase();
+            // splitting each part of the fullnamesearch into parts based on space
+            String[] tapLocationFull = fullLocationNameSearch.split(",");
+            String tapLocationCountry = tapLocationFull[tapLocationFull.length - 1].toLowerCase();
+            if (tapLocationCountry.contains(listCountry)) {
+                android.util.Log.i("list country found", listCountryList.get(0).toString());
+                countryList = listCountryList;
+            }
+
+            //sometimes there's a region but not a country found, because the region name from the main api
+            //does not contain the country inside so this fixes it by going with the region name instead
+            //and checks if there is a region then it would use the region's name
+            if (regionList.size() != 0) {
+                //if country wasn't already found, find it since there was a region
+                if (countryList.size() == 0) {
+                    String[] regionListFull = regionList.get(0).toString().split(",");
+                    String regionFindCountry = regionListFull[regionListFull.length - 1].toLowerCase();
+                    if (regionFindCountry.equals(listCountry)) {
+                        android.util.Log.i("list country found through region search", listCountryList.get(0).toString());
+                        countryList = listCountryList;
+                    }
+                }
+            }
+        }
+
+
         if (move) {
             mMap.moveCamera(CameraUpdateFactory.newLatLng(tapMark));
         }
@@ -529,8 +716,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             country_cases.setText("");
             countryButton.setVisibility(View.GONE);
         }
-
-        toggleInfoClick(true);
         Log.i("LatLong", tapMark.toString());
         System.out.println("OFF!");
 
@@ -579,7 +764,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             @Override
                             public void run() {
                                 // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                                changeInfo(name,true);
+                                changeInfo(name,true,false);
                                 toggleLoadingCircle(false);
                                 timer.purge();
                                 timer.cancel();
@@ -815,7 +1000,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 @Override
                                 public void run() {
                                     // This code will always run on the UI thread, therefore is safe to modify UI elements.
-                                    changeInfo("0",false);
+                                    changeInfo("0",false,false);
                                     toggleLoadingCircle(false);
                                     timer.purge();
                                     timer.cancel();
