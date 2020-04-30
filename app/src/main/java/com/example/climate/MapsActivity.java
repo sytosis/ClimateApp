@@ -584,7 +584,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             DatePicker picker = findViewById(R.id.datePicker);
             //change the date to match this date
             TextView dateText = findViewById(R.id.date_view);
-            dateText.setText("Covid-19 cases: " + picker.getDayOfMonth() + "/" + picker.getMonth() + 1 + "/" + picker.getYear());
+            dateText.setText("Covid-19 cases: " + picker.getDayOfMonth() + "/" + (picker.getMonth() + 1) + "/" + picker.getYear());
         } else {
             System.out.println("Using Main");
             locationList = listOfLocations;
