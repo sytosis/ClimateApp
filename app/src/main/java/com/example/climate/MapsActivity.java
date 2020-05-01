@@ -52,6 +52,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -182,7 +183,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //toggles additional info layout through buttons
     public void toggleAdditional(View view) {
+
         LinearLayout additionalLayout = findViewById(R.id.additional_layout);
+        LinearLayout dateDisplayLayout = findViewById(R.id.date_display_layout);
+        int[] location = new int[2];
+        dateDisplayLayout.getLocationOnScreen(location);
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) additionalLayout.getLayoutParams();
+        layoutParams.topMargin = location[1];
+        additionalLayout.setLayoutParams(layoutParams);
         String tag = view.getTag().toString();
         TextView additionalName = findViewById(R.id.additional_name);
         TextView additionalCases = findViewById(R.id.additional_total);
@@ -233,6 +241,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void toggleDate(View view) {
         //opens and closes the info text box
         LinearLayout dateLayout = findViewById(R.id.date_layout);
+
         if (dateLayout.getVisibility() == LinearLayout.GONE) {
             //forces Date UI to be directly under the Date shown on Info box
             //finds the date Display Layout
@@ -265,7 +274,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //sets the defaults for date picker
             DatePicker picker = findViewById(R.id.datePicker);
             picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
-            //picker.setMaxDate();
+            try{
+                SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(df.parse(currentDate));
+                cal.set(Calendar.HOUR, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                picker.setMaxDate(cal.getTimeInMillis());
+                cal.setTime(df.parse("03-22-2020"));
+                cal.set(Calendar.HOUR, 0);
+                cal.set(Calendar.MINUTE, 0);
+                cal.set(Calendar.SECOND, 0);
+                cal.set(Calendar.MILLISECOND, 0);
+                picker.setMinDate(cal.getTimeInMillis());
+                System.out.println(picker.getMinDate());
+                System.out.println(picker.getMaxDate());
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
             //disable google map scrolling and moving when info is open
             if (mMap != null) {
                 mMap.getUiSettings().setScrollGesturesEnabled(false);
@@ -537,7 +566,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void changeInfo (String loc, boolean move, boolean tempDate){
         System.out.println("ON!");
-        toggleInfoClick(true);
+        if (!tempDate) {
+            toggleInfoClick(true);
+        }
         //finds the nearest AQI based on lat and long, before adding it to the map
         double taplat = tapMark.latitude;
         double taplong = tapMark.longitude;
@@ -704,6 +735,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         TextView country_cases = findViewById(R.id.country_cases);
         ImageButton regionButton = findViewById(R.id.region_detailed_button);
         ImageButton countryButton = findViewById(R.id.country_detailed_button);
+        ImageButton dateButton = findViewById(R.id.date_open_button);
         if (regionList.size() != 0) {
             String[] regionListFull = regionList.get(0).toString().split(",");
             String regionName;
@@ -746,10 +778,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             additionalCountryRecovered = countryList.get(3).toString();
             additionalCountryActive = countryList.get(4).toString();
             countryButton.setVisibility(View.VISIBLE);
+            dateButton.setVisibility(View.VISIBLE);
         } else {
             country_name.setText("No regional coronavirus cases found");
             country_cases.setText("");
             countryButton.setVisibility(View.GONE);
+            dateButton.setVisibility(View.GONE);
         }
         Log.i("LatLong", tapMark.toString());
         System.out.println("OFF!");
