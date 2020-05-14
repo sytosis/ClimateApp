@@ -326,6 +326,53 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    //toggles additional info with specified selection
+    public void toggleOverview(Boolean bool) {
+        //opens and closes the additional box
+        LinearLayout overviewBox = findViewById(R.id.overview_box);
+        if (bool) {
+            overviewBox.setVisibility(LinearLayout.VISIBLE);
+        } else {
+            overviewBox.setVisibility(LinearLayout.GONE);
+        }
+    }
+
+    //toggles additional info with specified selection
+    public void toggleOverview(View view) {
+        //opens and closes the additional box
+        LinearLayout overviewBox = findViewById(R.id.overview_box);
+        if (overviewBox.getVisibility() == LinearLayout.VISIBLE) {
+            overviewBox.setVisibility(LinearLayout.GONE);
+        } else {
+            List<List<String>> tempList = new ArrayList();
+            tempList.addAll(listOfCountries);
+            int i = 0;
+            while (i < 16) {
+                String textID = "overview_" + i;
+                int resID = getResources().getIdentifier(textID, "id", getPackageName());
+                TextView textView = findViewById(resID);
+                List countryList = new ArrayList();
+                for (int j = 0; j < tempList.size(); j++) {
+                    Boolean pass = true;
+                    for (int k = 0; k < tempList.size(); k++) {
+                        if (Double.parseDouble(tempList.get(j).get(1)) < Double.parseDouble(tempList.get(k).get(1))) {
+                            pass = false;
+                        }
+                    }
+                    if (pass) {
+                        countryList.addAll(tempList.get(j));
+                        tempList.remove(j);
+                        textView.setText(countryList.get(0).toString() + ": " + countryList.get(1).toString());
+                    }
+                }
+               // textView.setText(listOfCountries.g);
+                i++;
+
+            }
+            overviewBox.setVisibility(LinearLayout.VISIBLE);
+        }
+    }
+
     //toggles date with specified selection
     public void toggleDateClick(Boolean bool) {
         //opens and closes the additional box
@@ -1015,6 +1062,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
                     }
                 }
+
             }
         }
         System.out.println(listOfCountries);
