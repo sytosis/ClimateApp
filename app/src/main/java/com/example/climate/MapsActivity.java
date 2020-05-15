@@ -69,6 +69,7 @@ import org.eclipse.jetty.util.IO;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -148,6 +149,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String additionalRegionalRecovered;
     String currentDate;
     String currentDateText;
+    int settingsCurrent = 1;
     boolean loading = false;
     boolean onOverview = false;
     boolean onInfo = false;
@@ -278,7 +280,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (bool) {
             infoText.setVisibility(LinearLayout.VISIBLE);
             TextView dateText = findViewById(R.id.date_view);
-            dateText.setText("Covid-19 cases: " + currentDateText);
+            if (settingsCurrent == 1) {
+                dateText.setText("Covid-19 total cases: " + currentDateText);
+            } else if (settingsCurrent == 2) {
+                dateText.setText("Covid-19 deaths cases: " + currentDateText);
+            } else if (settingsCurrent == 3) {
+                dateText.setText("Covid-19 recovered cases: " + currentDateText);
+            } else if (settingsCurrent == 4) {
+                dateText.setText("Covid-19 active cases: " + currentDateText);
+            }
             //disable google map scrolling and moving when info is open
             if (mMap != null) {
                 mMap.getUiSettings().setScrollGesturesEnabled(false);
@@ -310,20 +320,58 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    //toggles additional info with specified selection
+    //toggles overview info with specified selection
     public void toggleOverview(Boolean bool) {
         //opens and closes the additional box
         LinearLayout overviewBox = findViewById(R.id.overview_box);
         if (bool) {
+            //disable google map scrolling and moving when info is open
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(false);
+                mMap.getUiSettings().setZoomGesturesEnabled(false);
+                mMap.getUiSettings().setTiltGesturesEnabled(false);
+                mMap.getUiSettings().setRotateGesturesEnabled(false);
+            }
             overviewBox.setVisibility(LinearLayout.VISIBLE);
         } else {
             overviewBox.setVisibility(LinearLayout.GONE);
+            //re-enables scrolling
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(true);
+                mMap.getUiSettings().setZoomGesturesEnabled(true);
+                mMap.getUiSettings().setTiltGesturesEnabled(true);
+                mMap.getUiSettings().setRotateGesturesEnabled(true);
+            }
         }
     }
 
-    //toggles additional info with specified selection
+    //toggles setting info
+    public void toggleSettings(View view) {
+        LinearLayout settingsBox = findViewById(R.id.settings_layout);
+        if (settingsBox.getVisibility() == LinearLayout.VISIBLE) {
+            settingsBox.setVisibility(LinearLayout.GONE);
+            //re-enables scrolling
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(true);
+                mMap.getUiSettings().setZoomGesturesEnabled(true);
+                mMap.getUiSettings().setTiltGesturesEnabled(true);
+                mMap.getUiSettings().setRotateGesturesEnabled(true);
+            }
+        } else {
+            //disable google map scrolling and moving when info is open
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(false);
+                mMap.getUiSettings().setZoomGesturesEnabled(false);
+                mMap.getUiSettings().setTiltGesturesEnabled(false);
+                mMap.getUiSettings().setRotateGesturesEnabled(false);
+            }
+            settingsBox.setVisibility(LinearLayout.VISIBLE);
+        }
+    }
+
+    //toggles overview info
     public void toggleOverview(View view) {
-        //opens and closes the additional box
+        //opens and closes the overview box
         LinearLayout overviewBox = findViewById(R.id.overview_box);
         TextView dateText = findViewById(R.id.overview_date);
         if (overviewBox.getVisibility() == LinearLayout.VISIBLE) {
@@ -355,17 +403,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (int j = 0; j < tempList.size(); j++) {
                     Boolean pass = true;
                     for (int k = 0; k < tempList.size(); k++) {
-                        if (Double.parseDouble(tempList.get(j).get(1)) < Double.parseDouble(tempList.get(k).get(1))) {
+                        if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
                             pass = false;
                         }
                     }
                     if (pass) {
                         countryList.addAll(tempList.get(j));
                         tempList.remove(j);
-                        textView.setText(countryList.get(0).toString() + ": " + countryList.get(1).toString());
+                        textView.setText(countryList.get(0).toString() + ": " + countryList.get(settingsCurrent).toString());
                     }
                 }
-               // textView.setText(listOfCountries.g);
                 i++;
 
             }
@@ -395,6 +442,23 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    //code to set default covid cases viewing
+    public void changeDefaultCases(View view) {
+        TextView overviewLayout = findViewById(R.id.overview_title);
+        if (findViewById(view.getId()) == findViewById(R.id.settings_select_total)) {
+            settingsCurrent = 1;
+            overviewLayout.setText("Covid-19 country total cases: ");
+        } else if (findViewById(view.getId()) == findViewById(R.id.settings_select_deaths)) {
+            settingsCurrent = 2;
+            overviewLayout.setText("Covid-19 country deaths cases: ");
+        } else if (findViewById(view.getId()) == findViewById(R.id.settings_select_recovered)) {
+            settingsCurrent = 3;
+            overviewLayout.setText("Covid-19 country recovered cases: ");
+        } else if (findViewById(view.getId()) == findViewById(R.id.settings_select_active)) {
+            settingsCurrent = 4;
+            overviewLayout.setText("Covid-19 country active cases: ");
+        }
+    }
     //code for when the user picks a date
     public void datePick(View view) {
         listOfLocationsTemp.clear();
@@ -574,14 +638,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (int j = 0; j < tempList.size(); j++) {
                     Boolean pass = true;
                     for (int k = 0; k < tempList.size(); k++) {
-                        if (Double.parseDouble(tempList.get(j).get(1)) < Double.parseDouble(tempList.get(k).get(1))) {
+                        if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
                             pass = false;
                         }
                     }
                     if (pass) {
                         countryList.addAll(tempList.get(j));
                         tempList.remove(j);
-                        textView.setText(countryList.get(0).toString() + ": " + countryList.get(1).toString());
+                        textView.setText(countryList.get(0).toString() + ": " + countryList.get(settingsCurrent).toString());
                     }
                 }
                 i++;
@@ -728,7 +792,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             DatePicker picker = findViewById(R.id.datePicker);
             //change the date to match this date
             TextView dateText = findViewById(R.id.date_view);
-            dateText.setText("Covid-19 cases: " + picker.getDayOfMonth() + "/" + (picker.getMonth() + 1) + "/" + picker.getYear());
+            if (settingsCurrent == 1) {
+                dateText.setText("Covid-19 total cases: " + picker.getDayOfMonth() + "/" + (picker.getMonth() + 1) + "/" + picker.getYear());
+            } else if (settingsCurrent == 2) {
+                dateText.setText("Covid-19 deaths cases: " + picker.getDayOfMonth() + "/" + (picker.getMonth() + 1) + "/" + picker.getYear());
+            } else if (settingsCurrent == 3) {
+                dateText.setText("Covid-19 recovered cases: " + picker.getDayOfMonth() + "/" + (picker.getMonth() + 1) + "/" + picker.getYear());
+            } else if (settingsCurrent == 4) {
+                dateText.setText("Covid-19 active cases: " + picker.getDayOfMonth() + "/" + (picker.getMonth() + 1) + "/" + picker.getYear());
+            }
+
         } else {
             System.out.println("Using Main");
             locationList = listOfLocations;
@@ -832,7 +905,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
             region_name.setText("Locality: " + regionName);
-            region_cases.setText("Local Cases: " + regionList.get(1));
+            region_cases.setText("Local Cases: " + regionList.get(settingsCurrent));
             //populate the additional region cases
             additionalRegionalName = regionList.get(0).toString();
             additionalRegionalCases = regionList.get(1).toString();
@@ -848,7 +921,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         if (countryList.size() != 0) {
             country_name.setText("Country: " + countryList.get(0));
-            country_cases.setText("Country Cases: " + countryList.get(1));
+            country_cases.setText("Country Cases: " + countryList.get(settingsCurrent));
             //populate the additional country cases
             additionalCountryName = countryList.get(0).toString();
             additionalCountryCases = countryList.get(1).toString();

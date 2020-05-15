@@ -22,31 +22,39 @@
         android:layout_height="match_parent"
         android:layout_below="@id/autocomplete_fragment"/>
 
-    <ImageButton
-        android:id="@+id/info_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/myimage"
-        android:onClick="toggleInfo"/>
+        android:gravity="bottom"
+        android:background="@color/quantum_amber300">
+        <ImageButton
+            android:id="@+id/info_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/myimage"
+            android:onClick="toggleInfo"/>
+        <ImageButton
+            android:id="@+id/settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/myimage"
+            android:onClick="toggleSettings"/>
+        <ImageButton
+            android:id="@+id/overview_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/myimage"
+            android:onClick="toggleOverview"/>
 
-    <ImageButton
-        android:id="@+id/myLocation_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:background="@drawable/myimage"
-        android:onClick="myLocation"/>
+        <ImageButton
+            android:id="@+id/myLocation_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/myimage"
+            android:onClick="myLocation"/>
+    </LinearLayout>
 
-    <ImageButton
-        android:id="@+id/overview_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/myimage"
-        android:onClick="toggleOverview"/>
 
     <ImageView
         android:id = "@+id/loading_circle"
@@ -76,7 +84,7 @@
                 android:id = "@+id/overview_box"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:visibility="visible"
+                android:visibility="gone"
                 android:orientation="horizontal"
                 android:gravity="center">
 
@@ -114,7 +122,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:gravity="center"
-                                android:text="Covid-19 country cases: "
+                                android:text="Covid-19 country total cases: "
                                 android:textSize="18sp"
                                 android:textStyle="normal"
                             />
@@ -175,6 +183,7 @@
                             android:textSize="18sp"
                             android:textStyle="normal"
                             />
+
                         <TextView
                             android:id="@+id/overview_3"
                             android:layout_width="wrap_content"
@@ -183,8 +192,7 @@
                             android:gravity="center"
                             android:text="@string/test"
                             android:textSize="18sp"
-                            android:textStyle="normal"
-                            />
+                            android:textStyle="normal" />
                         <TextView
                             android:id="@+id/overview_4"
                             android:layout_width="wrap_content"
@@ -409,7 +417,7 @@
                                android:layout_height="wrap_content"
                                android:layout_gravity="center"
                                android:gravity="center"
-                               android:text="Covid-19 cases: "
+                               android:text="Covid-19 total cases: "
                                android:textSize="18sp"
                                android:textStyle="normal"
                                />
@@ -517,6 +525,99 @@
        </RelativeLayout>
 
    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id = "@+id/settings_layout"
+        android:orientation="horizontal"
+        android:layout_marginTop="250dp"
+        >
+
+        <RelativeLayout
+            android:layout_width="0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.15">
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.7">
+
+            <LinearLayout
+                android:layout_width="290dp"
+                android:layout_height="270dp"
+                android:background="@color/quantum_lime100"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+                <ImageButton
+                    android:id="@+id/settings_close_button"
+                    android:layout_width="23dp"
+                    android:layout_height="23dp"
+                    android:layout_gravity="top|end"
+                    android:background="@drawable/myimage"
+                    android:onClick="toggleSettings"
+                    android:contentDescription="Button"
+                    android:tag="dateButton"
+                    />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@color/quantum_lime100"
+                    android:gravity="center">
+                    <ImageButton
+                        android:id="@+id/settings_select_total"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|center_horizontal"
+                        android:background="@drawable/myimage"
+                        android:onClick="changeDefaultCases"
+                        android:contentDescription="Button"
+                        android:tag="dateButton"
+                        />
+                    <ImageButton
+                        android:id="@+id/settings_select_active"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|center_horizontal"
+                        android:background="@drawable/myimage"
+                        android:onClick="changeDefaultCases"
+                        android:contentDescription="Button"
+                        android:tag="dateButton"
+                        />
+                    <ImageButton
+                        android:id="@+id/settings_select_recovered"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|center_horizontal"
+                        android:background="@drawable/myimage"
+                        android:onClick="changeDefaultCases"
+                        android:contentDescription="Button"
+                        android:tag="dateButton"
+                        />
+                    <ImageButton
+                        android:id="@+id/settings_select_deaths"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center|center_horizontal"
+                        android:background="@drawable/myimage"
+                        android:onClick="changeDefaultCases"
+                        android:contentDescription="Button"
+                        android:tag="dateButton"
+                        />
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.15">
+        </RelativeLayout>
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
