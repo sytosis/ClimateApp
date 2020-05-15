@@ -531,6 +531,7 @@
         android:layout_height="fill_parent"
         android:id = "@+id/settings_layout"
         android:orientation="horizontal"
+        android:visibility="gone"
         android:layout_marginTop="250dp"
         >
 

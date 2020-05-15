@@ -360,6 +360,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else {
             //disable google map scrolling and moving when info is open
             if (mMap != null) {
+                toggleAdditionalClick(false);
+                toggleOverview(false);
+                toggleInfoClick(false);
                 mMap.getUiSettings().setScrollGesturesEnabled(false);
                 mMap.getUiSettings().setZoomGesturesEnabled(false);
                 mMap.getUiSettings().setTiltGesturesEnabled(false);
