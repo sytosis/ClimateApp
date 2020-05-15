@@ -107,6 +107,17 @@
                             android:background="@drawable/myimage"
                             android:onClick="toggleOverview"
                             />
+
+                        <TextView
+                                android:id="@+id/overview_title"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:text="Covid-19 country cases: "
+                                android:textSize="18sp"
+                                android:textStyle="normal"
+                            />
                         <LinearLayout
                             android:id = "@+id/overview_date_layout"
                             android:layout_width="375dp"
@@ -120,27 +131,20 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:gravity="center"
-                                android:text="Covid-19 country cases: "
+                                android:text=""
                                 android:textSize="18sp"
                                 android:textStyle="normal"
                                 />
                             <ImageButton
+                                android:id="@+id/overview_date_button"
                                 android:layout_width="23dp"
                                 android:layout_height="23dp"
                                 android:background="@drawable/myimage"
                                 android:onClick="toggleDate"
-                                android:contentDescription="Button"
+                                android:contentDescription="Buttn"
                                 android:tag="region"
                                 />
                         </LinearLayout>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:gravity="center"
-                            android:textSize="18sp"
-                            android:textStyle="normal"
-                            />
                         <TextView
                             android:id="@+id/overview_0"
                             android:layout_width="wrap_content"
@@ -410,7 +414,7 @@
                                android:textStyle="normal"
                                />
                            <ImageButton
-                               android:id="@+id/date_open_button"
+                               android:id="@+id/info_date_button"
                                android:layout_width="23dp"
                                android:layout_height="23dp"
                                android:background="@drawable/myimage"

@@ -149,6 +149,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String currentDate;
     String currentDateText;
     boolean loading = false;
+    boolean onOverview = false;
+    boolean onInfo = false;
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
     private static final String TAG = "MainActivity";
@@ -224,17 +226,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (infoText.getVisibility() == LinearLayout.GONE) {
             infoText.setVisibility(LinearLayout.VISIBLE);
             //disable google map scrolling and moving when info is open
-            mMap.getUiSettings().setScrollGesturesEnabled(false);
-            mMap.getUiSettings().setZoomGesturesEnabled(false);
-            mMap.getUiSettings().setTiltGesturesEnabled(false);
-            mMap.getUiSettings().setRotateGesturesEnabled(false);
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(false);
+                mMap.getUiSettings().setZoomGesturesEnabled(false);
+                mMap.getUiSettings().setTiltGesturesEnabled(false);
+                mMap.getUiSettings().setRotateGesturesEnabled(false);
+            }
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
             infoText.setVisibility(LinearLayout.GONE);
-            //enable scrolling
-            mMap.getUiSettings().setScrollGesturesEnabled(true);
-            mMap.getUiSettings().setZoomGesturesEnabled(true);
-            mMap.getUiSettings().setTiltGesturesEnabled(true);
-            mMap.getUiSettings().setRotateGesturesEnabled(true);
+            //re-enables scrolling
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(true);
+                mMap.getUiSettings().setZoomGesturesEnabled(true);
+                mMap.getUiSettings().setTiltGesturesEnabled(true);
+                mMap.getUiSettings().setRotateGesturesEnabled(true);
+            }
         }
     }
 
@@ -246,13 +252,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             //forces Date UI to be directly under the Date shown on Info box
             //finds the date Display Layout
             LinearLayout dateDisplayLayout = findViewById(R.id.date_display_layout);
-            //finds the location of the layout on screen
+            //finds the location of the layout on screen, forces it to be directly under the date
             int[] location = new int[2];
             dateDisplayLayout.getLocationOnScreen(location);
             RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) dateLayout.getLayoutParams();
             layoutParams.topMargin = location[1];
             dateLayout.setLayoutParams(layoutParams);
             dateLayout.setVisibility(LinearLayout.VISIBLE);
+            if (findViewById(view.getId()) == findViewById(R.id.overview_date_button)) {
+                onOverview = true;
+                onInfo = false;
+            } else if (findViewById(view.getId()) == findViewById(R.id.info_date_button)) {
+                onInfo = true;
+                onOverview = false;
+            }
         } else if (dateLayout.getVisibility() == LinearLayout.VISIBLE) {
             dateLayout.setVisibility(LinearLayout.GONE);
         }
@@ -266,35 +279,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             infoText.setVisibility(LinearLayout.VISIBLE);
             TextView dateText = findViewById(R.id.date_view);
             dateText.setText("Covid-19 cases: " + currentDateText);
-            String dateTempValues[] = currentDateText.split("/");
-            int dateValues[] = new int[3];
-            for(int i=0; i<dateTempValues.length; i++) {
-                dateValues[i] = Integer.parseInt(dateTempValues[i]);
-            }
-            //sets the defaults for date picker
-            DatePicker picker = findViewById(R.id.datePicker);
-            picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
-            try{
-                SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
-                Calendar cal = Calendar.getInstance();
-                cal.setTime(df.parse(currentDate));
-                cal.set(Calendar.HOUR, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                picker.setMaxDate(cal.getTimeInMillis());
-                cal.setTime(df.parse("03-22-2020"));
-                cal.set(Calendar.HOUR, 0);
-                cal.set(Calendar.MINUTE, 0);
-                cal.set(Calendar.SECOND, 0);
-                cal.set(Calendar.MILLISECOND, 0);
-                picker.setMinDate(cal.getTimeInMillis());
-                System.out.println(picker.getMinDate());
-                System.out.println(picker.getMaxDate());
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
             //disable google map scrolling and moving when info is open
             if (mMap != null) {
                 mMap.getUiSettings().setScrollGesturesEnabled(false);
@@ -341,11 +325,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void toggleOverview(View view) {
         //opens and closes the additional box
         LinearLayout overviewBox = findViewById(R.id.overview_box);
+        TextView dateText = findViewById(R.id.overview_date);
         if (overviewBox.getVisibility() == LinearLayout.VISIBLE) {
             overviewBox.setVisibility(LinearLayout.GONE);
+            //re-enables scrolling
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(true);
+                mMap.getUiSettings().setZoomGesturesEnabled(true);
+                mMap.getUiSettings().setTiltGesturesEnabled(true);
+                mMap.getUiSettings().setRotateGesturesEnabled(true);
+            }
         } else {
-            List<List<String>> tempList = new ArrayList();
-            tempList.addAll(listOfCountries);
+            //disable google map scrolling and moving when info is open
+            if (mMap != null) {
+                mMap.getUiSettings().setScrollGesturesEnabled(false);
+                mMap.getUiSettings().setZoomGesturesEnabled(false);
+                mMap.getUiSettings().setTiltGesturesEnabled(false);
+                mMap.getUiSettings().setRotateGesturesEnabled(false);
+            }
+
+            List<List<String>> tempList = new ArrayList(listOfCountries);
+            dateText.setText(currentDateText);
             int i = 0;
             while (i < 16) {
                 String textID = "overview_" + i;
@@ -557,8 +557,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
         System.out.println(listOfCountriesTemp);
-        changeInfo("0",false,true);
         toggleDateClick(false);
+        //main setup of date picker done, below is to reassign based on which button clicked it.
+        if (onInfo) {
+            changeInfo("0",false,true);
+        } else if (onOverview) {
+            TextView dateText = findViewById(R.id.overview_date);
+            dateText.setText(picker.getDayOfMonth() + "/" + (picker.getMonth() + 1) + "/" + picker.getYear());
+            List<List<String>> tempList = new ArrayList(listOfCountriesTemp);
+            int i = 0;
+            while (i < 16) {
+                String textID = "overview_" + i;
+                int resID = getResources().getIdentifier(textID, "id", getPackageName());
+                TextView textView = findViewById(resID);
+                List countryList = new ArrayList();
+                for (int j = 0; j < tempList.size(); j++) {
+                    Boolean pass = true;
+                    for (int k = 0; k < tempList.size(); k++) {
+                        if (Double.parseDouble(tempList.get(j).get(1)) < Double.parseDouble(tempList.get(k).get(1))) {
+                            pass = false;
+                        }
+                    }
+                    if (pass) {
+                        countryList.addAll(tempList.get(j));
+                        tempList.remove(j);
+                        textView.setText(countryList.get(0).toString() + ": " + countryList.get(1).toString());
+                    }
+                }
+                i++;
+
+            }
+        }
+
+
     }
     public void myLocation(View view) {
         //finds current device location
@@ -782,7 +813,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         TextView country_cases = findViewById(R.id.country_cases);
         ImageButton regionButton = findViewById(R.id.region_detailed_button);
         ImageButton countryButton = findViewById(R.id.country_detailed_button);
-        ImageButton dateButton = findViewById(R.id.date_open_button);
+        ImageButton dateButton = findViewById(R.id.info_date_button);
         if (regionList.size() != 0) {
             String[] regionListFull = regionList.get(0).toString().split(",");
             String regionName;
@@ -1085,6 +1116,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         toggleInfoClick(false);
         toggleAdditionalClick(false);
         toggleDateClick(false);
+        String dateTempValues[] = currentDateText.split("/");
+        int dateValues[] = new int[3];
+        for(int i=0; i<dateTempValues.length; i++) {
+            dateValues[i] = Integer.parseInt(dateTempValues[i]);
+        }
+
+        //sets the defaults for date picker
+        DatePicker picker = findViewById(R.id.datePicker);
+        picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
+        try{
+            SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(df.parse(currentDate));
+            picker.setMaxDate(cal.getTimeInMillis());
+            cal.setTime(df.parse("03-22-2020"));
+            picker.setMinDate(cal.getTimeInMillis());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         //specifies googleMaps
         mMap = googleMap;
         //Create a new event listener
