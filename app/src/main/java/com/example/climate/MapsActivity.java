@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Scanner;
 import java.util.StringJoiner;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -478,6 +479,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             dayString = "0" + dayString;
         }
         String formattedDate = monthString + "-" + dayString + "-" + picker.getYear();
+        SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
+        Date date = new Date();
+        try {
+           date = df.parse(formattedDate);
+        } catch (ParseException e) {
+            System.out.println(e.toString());
+        }
+
         //fill temp list with data
         try {
             String csvurl = "";
@@ -509,33 +518,162 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     builder.append(line);
                     line = builder.toString();
                     List<String> listCsv = new ArrayList<String>();
-                    //if it has quotation marks in it, it means theres comma that breaks the split for ","
-                    //this is tested by checking if the last character of the string has anything that isnt a letter eg a quotation mark
-                    if (line.substring(line.length() - 1).equals("\"")) {
-                        List<String> listQuotes = Arrays.asList(line.split("\""));
-                        listCsv.add(listQuotes.get(1));
-                        List<String> listCsvTemp;
-                        listCsvTemp = Arrays.asList(listQuotes.get(0).split(","));
-                        try {
-                            listCsvTemp = listCsvTemp.subList(listCsvTemp.size() - 4, listCsvTemp.size());
-                        } catch (IndexOutOfBoundsException e) {
-                            //for some reason south korea had more than the quotation marks at the end of the string
-                            System.out.println(e.toString());
-                            listCsvTemp = Arrays.asList(listQuotes.get(2).split(","));
-                            listCsvTemp = listCsvTemp.subList(listCsvTemp.size() - 4, listCsvTemp.size());
+
+                    //for the formatted date after 22/3/2020 due to the data input format change
+                    if (date.after(new Date(2020,3,21))) {
+                        System.out.println("Accessing main latest data");
+                        //if it has quotation marks in it, it means theres comma that breaks the split for ","
+                        //this is tested by checking if the last character of the string has anything that isnt a letter eg a quotation mark
+                        if (line.substring(line.length() - 1).equals("\"")) {
+                            List<String> listQuotes = Arrays.asList(line.split("\""));
+                            listCsv.add(listQuotes.get(1));
+                            List<String> listCsvTemp;
+                            listCsvTemp = Arrays.asList(listQuotes.get(0).split(","));
+                            try {
+                                listCsvTemp = listCsvTemp.subList(listCsvTemp.size() - 4, listCsvTemp.size());
+                            } catch (IndexOutOfBoundsException e) {
+                                //for some reason south korea had more than the quotation marks at the end of the string
+                                System.out.println(e.toString());
+                                listCsvTemp = Arrays.asList(listQuotes.get(2).split(","));
+                                listCsvTemp = listCsvTemp.subList(listCsvTemp.size() - 4, listCsvTemp.size());
+                            }
+                            listCsv.add(listCsvTemp.get(0));
+                            listCsv.add(listCsvTemp.get(1));
+                            listCsv.add(listCsvTemp.get(2));
+                            listCsv.add(listCsvTemp.get(3));
+                        } else {
+                            listCsv = Arrays.asList(line.split(",",11));
+                            listCsv = listCsv.subList(6,listCsv.size());
+                            String confirmed = listCsv.get(0);
+                            String deaths = listCsv.get(1);
+                            String recovered = listCsv.get(2);
+                            String active = listCsv.get(3);
+                            String name = listCsv.get(4);
+
+                            listCsv.set(0,name);
+                            listCsv.set(1,confirmed);
+                            listCsv.set(2,deaths);
+                            listCsv.set(3,recovered);
+                            listCsv.set(4,active);
                         }
-                        listCsv.add(listCsvTemp.get(0));
-                        listCsv.add(listCsvTemp.get(1));
-                        listCsv.add(listCsvTemp.get(2));
-                        listCsv.add(listCsvTemp.get(3));
-                    } else {
-                        listCsv = Arrays.asList(line.split(",",11));
-                        listCsv = listCsv.subList(6,listCsv.size());
-                        String confirmed = listCsv.get(0);
-                        String deaths = listCsv.get(1);
-                        String recovered = listCsv.get(2);
-                        String active = listCsv.get(3);
-                        String name = listCsv.get(4);
+
+                        System.out.println(listCsv.toString());
+                        //Collections.reverse(listCsv);
+                        String countryName[] = listCsv.get(0).split(",");
+                        //replaces any foreign characters in country
+                        String testCountry = countryName[countryName.length - 1];
+                        System.out.println("country" + testCountry);
+                        //replace US with United states
+                        if (testCountry.contains("US")) {
+                            countryName[countryName.length - 1] = "United States";
+                        }
+                        if (testCountry.contains("South")) {
+                            countryName[countryName.length - 1] = "South Korea";
+                        }
+                        String country = String.join(",", countryName);
+                        listCsv.set(0,country);
+                    } else if (date.after(new Date(2020,2,29))){
+                        tester = line.charAt(0);
+                        if (!Character.isLetter(tester)) {
+                            line = line.substring(1);
+                        }
+
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(line);
+                        line = sb.reverse().toString();
+                        listCsv = Arrays.asList(line.split(",",7));
+                        Collections.reverse(listCsv);
+                        //reverses each content in listCsv
+                        for (int j = 0; j < listCsv.size(); j++) {
+                            builder = new StringBuilder();
+                            builder.append(listCsv.get(j));
+                            builder = builder.reverse();
+                            listCsv.set(j,builder.toString());
+
+                        }
+                        System.out.println(listCsv);
+                        System.out.println(listCsv.get(0));
+                        String countryName[] = listCsv.get(0).split(",");
+                        //replaces any foreign characters in country
+                        String testCountry = countryName[countryName.length - 1];
+                        System.out.println("country" + testCountry);
+                        //replace US with United states
+                        if (testCountry.contains("US")) {
+                            countryName[countryName.length - 1] = "United States";
+                        }
+                        if (testCountry.contains("South")) {
+                            countryName[countryName.length - 1] = "South Korea";
+                        }
+                        String country = String.join(",", countryName);
+                        listCsv.set(0,country);
+                        String confirmed = listCsv.get(2);
+                        String deaths = listCsv.get(3);
+                        String recovered = listCsv.get(4);
+                        Double activeTemp = Double.parseDouble(confirmed) - Double.parseDouble(deaths) - Double.parseDouble(recovered);
+                        String active = String.valueOf(activeTemp);
+                        String name = listCsv.get(0);
+
+                        listCsv.set(0,name);
+                        listCsv.set(1,confirmed);
+                        listCsv.set(2,deaths);
+                        listCsv.set(3,recovered);
+                        listCsv.set(4,active);
+                    } else if (date.before(new Date(2020,3,1))) {
+                        tester = line.charAt(0);
+                        if (!Character.isLetter(tester)) {
+                            line = line.substring(1);
+                        }
+
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(line);
+                        line = sb.reverse().toString();
+                        listCsv = Arrays.asList(line.split(",",5));
+                        Collections.reverse(listCsv);
+                        //reverses each content in listCsv
+                        for (int j = 0; j < listCsv.size(); j++) {
+                            builder = new StringBuilder();
+                            builder.append(listCsv.get(j));
+                            builder = builder.reverse();
+                            listCsv.set(j,builder.toString());
+
+                        }
+                        System.out.println(listCsv);
+                        System.out.println(listCsv.get(0));
+                        String countryName[] = listCsv.get(0).split(",");
+                        //replaces any foreign characters in country
+                        String testCountry = countryName[countryName.length - 1];
+                        System.out.println("country" + testCountry);
+                        //replace US with United states
+                        if (testCountry.contains("US")) {
+                            countryName[countryName.length - 1] = "United States";
+                        }
+                        if (testCountry.contains("South")) {
+                            countryName[countryName.length - 1] = "South Korea";
+                        }
+                        String country = String.join(",", countryName);
+                        listCsv.set(0,country);
+                        String confirmed = listCsv.get(2);
+                        if (confirmed == "") {
+                            confirmed = "0";
+                        }
+                        System.out.println(confirmed);
+                        String deaths = listCsv.get(3);
+                        if (deaths == "") {
+                            deaths = "0";
+                        }
+                        String recovered = listCsv.get(4);
+                        if (recovered == "") {
+                            recovered = "0";
+                        }
+                        String active = "0";
+                        try {
+                            Double activeTemp = Double.parseDouble(confirmed) - Double.parseDouble(deaths) - Double.parseDouble(recovered);
+                            active = String.valueOf(activeTemp);
+                        } catch (NumberFormatException e) {
+
+                        }
+
+                        String name = listCsv.get(0);
 
                         listCsv.set(0,name);
                         listCsv.set(1,confirmed);
@@ -543,22 +681,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         listCsv.set(3,recovered);
                         listCsv.set(4,active);
                     }
-
-                    System.out.println(listCsv.toString());
-                    //Collections.reverse(listCsv);
-                    String countryName[] = listCsv.get(0).split(",");
-                    //replaces any foreign characters in country
-                    String testCountry = countryName[countryName.length - 1];
-                    System.out.println("country" + testCountry);
-                    //replace US with United states
-                    if (testCountry.contains("US")) {
-                        countryName[countryName.length - 1] = "United States";
-                    }
-                    if (testCountry.contains("South")) {
-                        countryName[countryName.length - 1] = "South Korea";
-                    }
-                    String country = String.join(",", countryName);
-                    listCsv.set(0,country);
                     listOfLocationsTemp.add(listCsv);
                 }
                 System.out.println(listOfLocationsTemp);
@@ -598,7 +720,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         listOfCountriesTemp.get(y).set(1,intValue);
 
                         //deaths
-                        value = Double.valueOf(listOfCountriesTemp.get(y).get(2)) + Double.valueOf(tempLocation.get(2));
+                        value = Double.parseDouble(listOfCountriesTemp.get(y).get(2)) + Double.parseDouble(tempLocation.get(2));
                         intValue = Double.toString(value);
                         listOfCountriesTemp.get(y).set(2,intValue);
 
@@ -633,6 +755,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             dateText.setText(picker.getDayOfMonth() + "/" + (picker.getMonth() + 1) + "/" + picker.getYear());
             List<List<String>> tempList = new ArrayList(listOfCountriesTemp);
             int i = 0;
+            //resets the text
+            while (i < 16) {
+                String textID = "overview_" + i;
+                int resID = getResources().getIdentifier(textID, "id", getPackageName());
+                TextView textView = findViewById(resID);
+                textView.setText("");
+                i++;
+
+            }
+            i = 0;
             while (i < 16) {
                 String textID = "overview_" + i;
                 int resID = getResources().getIdentifier(textID, "id", getPackageName());
@@ -1206,7 +1338,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Calendar cal = Calendar.getInstance();
             cal.setTime(df.parse(currentDate));
             picker.setMaxDate(cal.getTimeInMillis());
-            cal.setTime(df.parse("03-22-2020"));
+            cal.setTime(df.parse("01-22-2020"));
             picker.setMinDate(cal.getTimeInMillis());
         } catch (ParseException e) {
             e.printStackTrace();
