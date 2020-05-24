@@ -520,8 +520,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     List<String> listCsv = new ArrayList<String>();
 
                     //for the formatted date after 22/3/2020 due to the data input format change
-                    if (date.after(new Date(2020,3,21))) {
-                        System.out.println("Accessing main latest data");
+                    //date is formatted weird, year has to - 1900 and month starts at 0 so have to - 1
+                    if (date.after(new Date(2020 - 1900,3 - 1,21))) {
+                        System.out.println("Accessing data Set 3");
                         //if it has quotation marks in it, it means theres comma that breaks the split for ","
                         //this is tested by checking if the last character of the string has anything that isnt a letter eg a quotation mark
                         if (line.substring(line.length() - 1).equals("\"")) {
@@ -572,7 +573,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         }
                         String country = String.join(",", countryName);
                         listCsv.set(0,country);
-                    } else if (date.after(new Date(2020,2,29))){
+                    } else if (date.after(new Date(2020 - 1900,2 - 1,29)) && date.before(new Date(2020 - 1900,3 - 1,22))){
+                        System.out.println("Accessing data Set 2");
                         tester = line.charAt(0);
                         if (!Character.isLetter(tester)) {
                             line = line.substring(1);
@@ -618,7 +620,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         listCsv.set(2,deaths);
                         listCsv.set(3,recovered);
                         listCsv.set(4,active);
-                    } else if (date.before(new Date(2020,3,1))) {
+                    } else if (date.before(new Date(2020-1900,3 - 1,1))) {
+                        System.out.println("Accessing data Set 1");
                         tester = line.charAt(0);
                         if (!Character.isLetter(tester)) {
                             line = line.substring(1);
@@ -715,7 +718,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (int y = 0; y < listOfCountriesTemp.size(); ++y) {
                     if (listOfCountriesTemp.get(y).get(0).equals(tempCountry)) {
                         //Cases
-                        Double value = Double.valueOf(listOfCountriesTemp.get(y).get(1)) + Double.valueOf(tempLocation.get(1));
+                        Double value = Double.parseDouble(listOfCountriesTemp.get(y).get(1)) + Double.parseDouble(tempLocation.get(1));
                         String intValue = Double.toString(value);
                         listOfCountriesTemp.get(y).set(1,intValue);
 
