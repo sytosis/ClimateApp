@@ -528,13 +528,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             List<String> alterList = new ArrayList<String>();
                             alterList = Arrays.asList(line.split(",",11));
                             List<String> nameList = Arrays.asList(alterList.get(alterList.size() - 1).split(","));
-                            if (((nameList.get(nameList.size() - 1)).length() > 0)) {
+                            if ((nameList.get(nameList.size() - 1).length() > 0)) {
                                 if(Character.isDigit((nameList.get(nameList.size() - 1)).charAt(0))) {
                                     nameList = nameList.subList(0, nameList.size() - 1);
                                 }
                             }
 
-                            if (((nameList.get(nameList.size() - 1)).length() > 0)) {
+                            if ((nameList.get(nameList.size() - 1).length() > 0)) {
                                 if(Character.isDigit((nameList.get(nameList.size() - 1)).charAt(0))) {
                                     nameList = nameList.subList(0, nameList.size() - 1);
                                 }
@@ -542,11 +542,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             String nameAltered = String.join(",",nameList);
                             alterList.set(alterList.size() - 1, nameAltered);
                             line = String.join(",", alterList);
-                            System.out.println("Accessing data Set 4");
-                        } else {
-                            System.out.println("Accessing data Set 3");
                         }
-
+                        System.out.println("Accessing data 3 and 4");
                         //if it has quotation marks in it, it means theres comma that breaks the split for ","
                         //this is tested by checking if the last character of the string has anything that isnt a letter eg a quotation mark
                         if (line.substring(line.length() - 1).equals("\"")) {
@@ -592,6 +589,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             listCsvTemp.add("0");
                             listCsv = listCsvTemp;
                         }
+
+                        //gets rid of any unintended quotation marks at the end of a country name.
+                        if (listCsv.get(0).substring(listCsv.get(0).length() - 2, listCsv.get(0).length() - 1).equals("\"")) {
+                            listCsv.set(0,listCsv.get(0).substring(0,listCsv.get(0).length() - 2));
+                        }
+
 
                         System.out.println(listCsv.toString());
                         //Collections.reverse(listCsv);
@@ -1232,13 +1235,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     List<String> alterList = new ArrayList<String>();
                     alterList = Arrays.asList(line.split(",",11));
                     List<String> nameList = Arrays.asList(alterList.get(alterList.size() - 1).split(","));
-                    if (((nameList.get(nameList.size() - 1)).length() > 0)) {
+                    if ((nameList.get(nameList.size() - 1).length() > 0)) {
                         if(Character.isDigit((nameList.get(nameList.size() - 1)).charAt(0))) {
                             nameList = nameList.subList(0, nameList.size() - 1);
                         }
                     }
 
-                    if (((nameList.get(nameList.size() - 1)).length() > 0)) {
+                    if ((nameList.get(nameList.size() - 1).length() > 0)) {
                         if(Character.isDigit((nameList.get(nameList.size() - 1)).charAt(0))) {
                             nameList = nameList.subList(0, nameList.size() - 1);
                         }
@@ -1291,6 +1294,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         listCsvTemp.add(listCsv.get(4));
                         listCsvTemp.add("0");
                         listCsv = listCsvTemp;
+                    }
+
+                    //gets rid of any unintended quotation marks at the end of a country name.
+                    if (listCsv.get(0).substring(listCsv.get(0).length() - 2, listCsv.get(0).length() - 1).equals("\"")) {
+                        listCsv.set(0,listCsv.get(0).substring(0,listCsv.get(0).length() - 2));
                     }
 
                     System.out.println(listCsv.toString());
@@ -1374,7 +1382,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
         System.out.println(listOfCountries);
-
+        for(int i = 0; i < listOfCountries.size(); i++) {
+            System.out.println(listOfCountries.get(i));
+        }
     }
 
 
