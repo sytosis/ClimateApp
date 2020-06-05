@@ -522,7 +522,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //for the formatted date after 22/3/2020 due to the data input format change
                     //date is formatted weird, year has to - 1900 and month starts at 0 so have to - 1
                     if (date.after(new Date(2020 - 1900,3 - 1,21))) {
-                        System.out.println("Accessing data Set 3");
+                        if (date.after(new Date(2020-1900,5 - 1,28))) {
+                            //removing the last two entries in the new 29/05/2020 update
+                            //for some reason "unassigned" regions do not have the last two entries so we need to edit it and luckily it only has 3 substrings in the name
+                            List<String> alterList = new ArrayList<String>();
+                            alterList = Arrays.asList(line.split(",",11));
+                            List<String> nameList = Arrays.asList(alterList.get(alterList.size() - 1).split(","));
+                            if (((nameList.get(nameList.size() - 1)).length() > 0)) {
+                                if(Character.isDigit((nameList.get(nameList.size() - 1)).charAt(0))) {
+                                    nameList = nameList.subList(0, nameList.size() - 1);
+                                }
+                            }
+
+                            if (((nameList.get(nameList.size() - 1)).length() > 0)) {
+                                if(Character.isDigit((nameList.get(nameList.size() - 1)).charAt(0))) {
+                                    nameList = nameList.subList(0, nameList.size() - 1);
+                                }
+                            }
+                            String nameAltered = String.join(",",nameList);
+                            alterList.set(alterList.size() - 1, nameAltered);
+                            line = String.join(",", alterList);
+                            System.out.println("Accessing data Set 4");
+                        } else {
+                            System.out.println("Accessing data Set 3");
+                        }
+
                         //if it has quotation marks in it, it means theres comma that breaks the split for ","
                         //this is tested by checking if the last character of the string has anything that isnt a letter eg a quotation mark
                         if (line.substring(line.length() - 1).equals("\"")) {
@@ -556,6 +580,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             listCsv.set(2,deaths);
                             listCsv.set(3,recovered);
                             listCsv.set(4,active);
+                        }
+
+                        //Theres a posibility after 29/5/2020 update that some active cases were not recovered and thus it is calculated again by re changing the list.
+                        if (listCsv.get(1).length() == 0) {
+                            List<String> listCsvTemp = new ArrayList<String>();
+                            listCsvTemp.add(listCsv.get(0));
+                            listCsvTemp.add(listCsv.get(2));
+                            listCsvTemp.add(listCsv.get(3));
+                            listCsvTemp.add(listCsv.get(4));
+                            listCsvTemp.add("0");
+                            listCsv = listCsvTemp;
                         }
 
                         System.out.println(listCsv.toString());
