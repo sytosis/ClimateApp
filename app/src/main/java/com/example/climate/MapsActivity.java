@@ -154,6 +154,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     boolean loading = false;
     boolean onOverview = false;
     boolean onInfo = false;
+    boolean disableInfoCLick = false;
+    //date values for default picker
+    int dateValues[] = new int[3];;
     private static final int MY_PERMISSION_ACCESS_COARSE_LOCATION = 11;
     private static final int MY_PERMISSION_ACCESS_FINE_LOCATION = 11;
     private static final String TAG = "MainActivity";
@@ -234,6 +237,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(false);
                 mMap.getUiSettings().setTiltGesturesEnabled(false);
                 mMap.getUiSettings().setRotateGesturesEnabled(false);
+                //sets the defaults for date picker
+                DatePicker picker = findViewById(R.id.datePicker);
+                picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
             }
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
             infoText.setVisibility(LinearLayout.GONE);
@@ -296,6 +302,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(false);
                 mMap.getUiSettings().setTiltGesturesEnabled(false);
                 mMap.getUiSettings().setRotateGesturesEnabled(false);
+                //sets the defaults for date picker
+                DatePicker picker = findViewById(R.id.datePicker);
+                picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
             }
         } else {
             infoText.setVisibility(LinearLayout.GONE);
@@ -332,6 +341,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(false);
                 mMap.getUiSettings().setTiltGesturesEnabled(false);
                 mMap.getUiSettings().setRotateGesturesEnabled(false);
+                disableInfoCLick = true;
+                //sets the defaults for date picker
+                DatePicker picker = findViewById(R.id.datePicker);
+                picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
             }
             overviewBox.setVisibility(LinearLayout.VISIBLE);
         } else {
@@ -342,6 +355,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(true);
                 mMap.getUiSettings().setTiltGesturesEnabled(true);
                 mMap.getUiSettings().setRotateGesturesEnabled(true);
+                disableInfoCLick = false;
             }
         }
     }
@@ -357,6 +371,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(true);
                 mMap.getUiSettings().setTiltGesturesEnabled(true);
                 mMap.getUiSettings().setRotateGesturesEnabled(true);
+                disableInfoCLick = true;
             }
         } else {
             //disable google map scrolling and moving when info is open
@@ -368,6 +383,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(false);
                 mMap.getUiSettings().setTiltGesturesEnabled(false);
                 mMap.getUiSettings().setRotateGesturesEnabled(false);
+                disableInfoCLick = false;
             }
             settingsBox.setVisibility(LinearLayout.VISIBLE);
         }
@@ -386,6 +402,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(true);
                 mMap.getUiSettings().setTiltGesturesEnabled(true);
                 mMap.getUiSettings().setRotateGesturesEnabled(true);
+                disableInfoCLick = true;
+                //sets the defaults for date picker
+                DatePicker picker = findViewById(R.id.datePicker);
+                picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
             }
         } else {
             //disable google map scrolling and moving when info is open
@@ -394,6 +414,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(false);
                 mMap.getUiSettings().setTiltGesturesEnabled(false);
                 mMap.getUiSettings().setRotateGesturesEnabled(false);
+                disableInfoCLick = false;
             }
             List<List<String>> tempList = new ArrayList(listOfCountries);
             dateText.setText(currentDateText);
@@ -923,7 +944,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     }
 
-    public void changeInfo (String loc, boolean move, boolean tempDate){
+    public void changeInfo (String loc, boolean move, boolean tempDate) {
+        //disables doing this function when unneeded eg on settings or overview page.
+        if (!tempDate && !disableInfoCLick) {
+            return;
+        }
         System.out.println("ON!");
         if (!tempDate) {
             toggleInfoClick(true);
@@ -1495,7 +1520,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         toggleAdditionalClick(false);
         toggleDateClick(false);
         String dateTempValues[] = currentDateText.split("/");
-        int dateValues[] = new int[3];
         for(int i=0; i<dateTempValues.length; i++) {
             dateValues[i] = Integer.parseInt(dateTempValues[i]);
         }
@@ -1503,6 +1527,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         //sets the defaults for date picker
         DatePicker picker = findViewById(R.id.datePicker);
         picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
+
         try{
             SimpleDateFormat df = new SimpleDateFormat("MM-dd-yyyy");
             Calendar cal = Calendar.getInstance();
