@@ -191,7 +191,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     //toggles additional info layout through buttons
     public void toggleAdditional(View view) {
-
         LinearLayout additionalLayout = findViewById(R.id.additional_layout);
         LinearLayout dateDisplayLayout = findViewById(R.id.date_display_layout);
         int[] location = new int[2];
@@ -240,6 +239,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 //sets the defaults for date picker
                 DatePicker picker = findViewById(R.id.datePicker);
                 picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
+                disableInfoCLick = true;
             }
         } else if (infoText.getVisibility() == LinearLayout.VISIBLE) {
             infoText.setVisibility(LinearLayout.GONE);
@@ -249,6 +249,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(true);
                 mMap.getUiSettings().setTiltGesturesEnabled(true);
                 mMap.getUiSettings().setRotateGesturesEnabled(true);
+                disableInfoCLick = false;
             }
         }
     }
@@ -355,7 +356,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(true);
                 mMap.getUiSettings().setTiltGesturesEnabled(true);
                 mMap.getUiSettings().setRotateGesturesEnabled(true);
-                disableInfoCLick = false;
             }
         }
     }
@@ -371,8 +371,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(true);
                 mMap.getUiSettings().setTiltGesturesEnabled(true);
                 mMap.getUiSettings().setRotateGesturesEnabled(true);
-                disableInfoCLick = true;
+                disableInfoCLick = false;
             }
+
         } else {
             //disable google map scrolling and moving when info is open
             if (mMap != null) {
@@ -383,7 +384,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(false);
                 mMap.getUiSettings().setTiltGesturesEnabled(false);
                 mMap.getUiSettings().setRotateGesturesEnabled(false);
-                disableInfoCLick = false;
+                disableInfoCLick = true;
             }
             settingsBox.setVisibility(LinearLayout.VISIBLE);
         }
@@ -402,7 +403,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(true);
                 mMap.getUiSettings().setTiltGesturesEnabled(true);
                 mMap.getUiSettings().setRotateGesturesEnabled(true);
-                disableInfoCLick = true;
+                disableInfoCLick = false;
                 //sets the defaults for date picker
                 DatePicker picker = findViewById(R.id.datePicker);
                 picker.updateDate(dateValues[2],dateValues[1] - 1,dateValues[0]);
@@ -414,7 +415,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setZoomGesturesEnabled(false);
                 mMap.getUiSettings().setTiltGesturesEnabled(false);
                 mMap.getUiSettings().setRotateGesturesEnabled(false);
-                disableInfoCLick = false;
+                disableInfoCLick = true;
             }
             List<List<String>> tempList = new ArrayList(listOfCountries);
             dateText.setText(currentDateText);
@@ -946,7 +947,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public void changeInfo (String loc, boolean move, boolean tempDate) {
         //disables doing this function when unneeded eg on settings or overview page.
-        if (!tempDate && !disableInfoCLick) {
+        System.out.println(tempDate);
+        System.out.println(disableInfoCLick);
+        System.out.println(!tempDate && disableInfoCLick);
+        if (!tempDate && disableInfoCLick) {
             return;
         }
         System.out.println("ON!");
