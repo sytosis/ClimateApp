@@ -537,7 +537,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             for (int j = 0; j < tempList.size(); j++) {
                 Boolean pass = true;
                 for (int k = 0; k < tempList.size(); k++) {
-                    if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
+                    if (Integer.parseInt(tempList.get(j).get(settingsCurrent)) < Integer.parseInt(tempList.get(k).get(settingsCurrent))) {
                         pass = false;
                     }
                 }
@@ -808,6 +808,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         listCsv.set(3,recovered);
                         listCsv.set(4,active);
                     }
+                    //setting double values to int here
+                    int i = 1;
+                    while (i < 5) {
+                        int val = (int) Math.round(Double.valueOf(listCsv.get(i)));
+                        listCsv.set(i,String.valueOf(val));
+                        i++;
+                    }
                     listOfLocationsTemp.add(listCsv);
                 }
                 System.out.println(listOfLocationsTemp);
@@ -843,10 +850,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             if (countryNotInList) {
                 //active cases, sometimes its not recorded and tests if its 0 to double check.
-                //sometimes active isnt recorded and it will be instead recalculated here
-                if (Double.parseDouble(tempLocation.get(4)) == 0) {
-                    double value = Double.parseDouble(tempLocation.get(1)) - Double.parseDouble(tempLocation.get(2)) -  Double.parseDouble(tempLocation.get(3));
-                    String intValue = Double.toString(value);
+                //sometimes active isn't recorded and it will be instead recalculated here
+                if (Integer.parseInt(tempLocation.get(4)) == 0) {
+                    int value = Integer.parseInt(tempLocation.get(1)) - Integer.parseInt(tempLocation.get(2)) -  Integer.parseInt(tempLocation.get(3));
+                    String intValue = String.valueOf(value);
                     tempLocation.set(4,intValue);
                 }
 
@@ -855,28 +862,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (int y = 0; y < listOfCountriesTemp.size(); ++y) {
                     if (listOfCountriesTemp.get(y).get(0).equals(tempCountry)) {
                         //Cases
-                        Double value = Double.parseDouble(listOfCountriesTemp.get(y).get(1)) + Double.parseDouble(tempLocation.get(1));
-                        String intValue = Double.toString(value);
+                        int value =Integer.parseInt(listOfCountriesTemp.get(y).get(1)) + Integer.parseInt(tempLocation.get(1));
+                        String intValue = String.valueOf(value);
                         listOfCountriesTemp.get(y).set(1,intValue);
 
                         //deaths
-                        value = Double.parseDouble(listOfCountriesTemp.get(y).get(2)) + Double.parseDouble(tempLocation.get(2));
-                        intValue = Double.toString(value);
+                        value = Integer.parseInt(listOfCountriesTemp.get(y).get(2)) + Integer.parseInt(tempLocation.get(2));
+                        intValue = String.valueOf(value);
                         listOfCountriesTemp.get(y).set(2,intValue);
 
                         //recovered
-                        value = Double.valueOf(listOfCountriesTemp.get(y).get(3)) + Double.valueOf(tempLocation.get(3));
-                        intValue = Double.toString(value);
+                        value =Integer.parseInt(listOfCountriesTemp.get(y).get(3)) + Integer.parseInt(tempLocation.get(3));
+                        intValue = String.valueOf(value);
                         listOfCountriesTemp.get(y).set(3,intValue);
 
                         //active cases, sometimes its not recorded and tests if its 0 to double check.
-                        if (Double.valueOf(tempLocation.get(4)) != 0) {
-                            value = Double.valueOf(listOfCountriesTemp.get(y).get(4)) + Double.valueOf(tempLocation.get(4));
-                            intValue = Double.toString(value);
+                        if (Integer.parseInt(tempLocation.get(4)) != 0) {
+                            value = Integer.parseInt(listOfCountriesTemp.get(y).get(4)) + Integer.parseInt(tempLocation.get(4));
+                            intValue = String.valueOf(value);
                             listOfCountriesTemp.get(y).set(4,intValue);
                         } else {
-                            value = Double.valueOf(listOfCountriesTemp.get(y).get(1)) - Double.valueOf(listOfCountriesTemp.get(y).get(2)) -  Double.valueOf(listOfCountriesTemp.get(y).get(3));
-                            intValue = Double.toString(value);
+                            value = Integer.parseInt(listOfCountriesTemp.get(y).get(1)) - Integer.parseInt(listOfCountriesTemp.get(y).get(2)) -  Integer.parseInt(listOfCountriesTemp.get(y).get(3));
+                            intValue = String.valueOf(value);
                             listOfCountriesTemp.get(y).set(4,intValue);
                         }
                     }
@@ -887,24 +894,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         System.out.println("Calculating worldwide info now");
         for (int y = 1; y < listOfCountriesTemp.size(); ++y) {
             //confirmed
-            double value = Double.parseDouble(worldwideInfoTemp.get(1)) + Double.parseDouble(listOfCountriesTemp.get(y).get(1));
-            String intValue = Double.toString(value);
+            int value = Integer.parseInt(worldwideInfoTemp.get(1)) + Integer.parseInt(listOfCountriesTemp.get(y).get(1));
+            String intValue = String.valueOf(value);
             System.out.println("Adding " + intValue + " Cases from ");
             worldwideInfoTemp.set(1,intValue);
 
             //deaths
-            value = Double.parseDouble(worldwideInfoTemp.get(2)) + Double.parseDouble(listOfCountriesTemp.get(y).get(2));
-            intValue = Double.toString(value);
+            value =Integer.parseInt(worldwideInfoTemp.get(2)) + Integer.parseInt(listOfCountriesTemp.get(y).get(2));
+            intValue = String.valueOf(value);
             worldwideInfoTemp.set(2,intValue);
 
             //recovered
-            value = Double.parseDouble(worldwideInfoTemp.get(3)) + Double.parseDouble(listOfCountriesTemp.get(y).get(3));
-            intValue = Double.toString(value);
+            value =Integer.parseInt(worldwideInfoTemp.get(3)) + Integer.parseInt(listOfCountriesTemp.get(y).get(3));
+            intValue =String.valueOf(value);
             worldwideInfoTemp.set(3,intValue);
 
             //active
-            value = Double.parseDouble(worldwideInfoTemp.get(4)) + Double.parseDouble(listOfCountriesTemp.get(y).get(4));
-            intValue = Double.toString(value);
+            value =Integer.parseInt(worldwideInfoTemp.get(4)) + Integer.parseInt(listOfCountriesTemp.get(y).get(4));
+            intValue = String.valueOf(value);
             worldwideInfoTemp.set(4,intValue);
         }
         //sort the list of countries based on size
@@ -916,7 +923,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             for (int j = 0; j < tempList.size(); j++) {
                 Boolean pass = true;
                 for (int k = 0; k < tempList.size(); k++) {
-                    if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
+                    if (Integer.parseInt(tempList.get(j).get(settingsCurrent)) < Integer.parseInt(tempList.get(k).get(settingsCurrent))) {
                         pass = false;
                     }
                 }
@@ -1408,7 +1415,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         listCsv.set(4,active);
                     }
 
-                    //There is  a possibility after 29/5/2020 update that some active cases were not recovered and thus it is calculated again by re changing the list.
+                    //There is a possibility after 29/5/2020 update that some active cases were not recovered and thus it is calculated again by re changing the list.
                     if (listCsv.get(1).length() == 0) {
                         List<String> listCsvTemp = new ArrayList<String>();
                         listCsvTemp.add(listCsv.get(0));
@@ -1417,6 +1424,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         listCsvTemp.add(listCsv.get(4));
                         listCsvTemp.add("0");
                         listCsv = listCsvTemp;
+                    }
+                    //setting double values to int here
+                    i = 1;
+                    while (i < 5) {
+                        int val = (int) Math.round(Double.valueOf(listCsv.get(i)));
+                        listCsv.set(i,String.valueOf(val));
+                        i++;
                     }
 
                     //gets rid of the Unused brackets that the country congo has
@@ -1483,9 +1497,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if (countryNotInList) {
                 //active cases, sometimes its not recorded and tests if its 0 to double check.
                 //sometimes active isnt recorded and it will be instead recalculated here
-                if (Double.parseDouble(tempLocation.get(4)) == 0) {
-                    double value = Double.parseDouble(tempLocation.get(1)) - Double.parseDouble(tempLocation.get(2)) -  Double.parseDouble(tempLocation.get(3));
-                    String intValue = Double.toString(value);
+                if (Integer.parseInt(tempLocation.get(4)) == 0) {
+                    int value = Integer.parseInt(tempLocation.get(1)) - Integer.parseInt(tempLocation.get(2)) -  Integer.parseInt(tempLocation.get(3));
+                    String intValue = String.valueOf(value);
                     tempLocation.set(4,intValue);
                 }
                 listOfCountries.add(tempLocation);
@@ -1493,29 +1507,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 for (int y = 0; y < listOfCountries.size(); ++y) {
                     if (listOfCountries.get(y).get(0).equals(tempCountry)) {
                         //Cases
-                        double value = Double.parseDouble(listOfCountries.get(y).get(1)) + Double.parseDouble(tempLocation.get(1));
-                        String intValue = Double.toString(value);
+                        int value = Integer.parseInt(listOfCountries.get(y).get(1)) + Integer.parseInt(tempLocation.get(1));
+                        String intValue = String.valueOf(value);
                         listOfCountries.get(y).set(1,intValue);
 
                         //deaths
-                        value = Double.parseDouble(listOfCountries.get(y).get(2)) + Double.parseDouble(tempLocation.get(2));
-                        intValue = Double.toString(value);
+                        value = Integer.parseInt(listOfCountries.get(y).get(2)) + Integer.parseInt(tempLocation.get(2));
+                        intValue = String.valueOf(value);
                         listOfCountries.get(y).set(2,intValue);
 
                         //recovered
-                        value = Double.parseDouble(listOfCountries.get(y).get(3)) + Double.parseDouble(tempLocation.get(3));
-                        intValue = Double.toString(value);
+                        value = Integer.parseInt(listOfCountries.get(y).get(3)) + Integer.parseInt(tempLocation.get(3));
+                        intValue = String.valueOf(value);
                         listOfCountries.get(y).set(3,intValue);
 
                         //active cases, sometimes its not recorded and tests if its 0 to double check.
-                        if (Double.parseDouble(tempLocation.get(4)) != 0) {
-                            value = Double.parseDouble(listOfCountries.get(y).get(4)) + Double.parseDouble(tempLocation.get(4));
-                            intValue = Double.toString(value);
+                        if (Integer.parseInt(tempLocation.get(4)) != 0) {
+                            value = Integer.parseInt(listOfCountries.get(y).get(4)) + Integer.parseInt(tempLocation.get(4));
+                            intValue = String.valueOf(value);
                             listOfCountries.get(y).set(4,intValue);
                             tempLocation.set(4,intValue);
                         } else {
-                            value = Double.parseDouble(listOfCountries.get(y).get(1)) - Double.parseDouble(listOfCountries.get(y).get(2)) -  Double.parseDouble(listOfCountries.get(y).get(3));
-                            intValue = Double.toString(value);
+                            value = Integer.parseInt(listOfCountries.get(y).get(1)) - Integer.parseInt(listOfCountries.get(y).get(2)) -  Integer.parseInt(listOfCountries.get(y).get(3));
+                            intValue = String.valueOf(value);
                             listOfCountries.get(y).set(4,intValue);
                         }
 
@@ -1527,24 +1541,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         System.out.println("Calculating worldwide info now");
         for (int y = 1; y < listOfCountries.size(); ++y) {
             //confirmed
-            double value = Double.parseDouble(worldwideInfo.get(1)) + Double.parseDouble(listOfCountries.get(y).get(1));
-            String intValue = Double.toString(value);
+            int value = Integer.parseInt(worldwideInfo.get(1)) + Integer.parseInt(listOfCountries.get(y).get(1));
+            String intValue = String.valueOf(value);
             System.out.println("Adding " + intValue + " Cases from ");
             worldwideInfo.set(1,intValue);
 
             //deaths
-            value = Double.parseDouble(worldwideInfo.get(2)) + Double.parseDouble(listOfCountries.get(y).get(2));
-            intValue = Double.toString(value);
+            value = Integer.parseInt(worldwideInfo.get(2)) + Integer.parseInt(listOfCountries.get(y).get(2));
+            intValue = String.valueOf(value);
             worldwideInfo.set(2,intValue);
 
             //recovered
-            value = Double.parseDouble(worldwideInfo.get(3)) + Double.parseDouble(listOfCountries.get(y).get(3));
-            intValue = Double.toString(value);
+            value = Integer.parseInt(worldwideInfo.get(3)) + Integer.parseInt(listOfCountries.get(y).get(3));
+            intValue = String.valueOf(value);
             worldwideInfo.set(3,intValue);
 
             //active
-            value = Double.parseDouble(worldwideInfo.get(4)) + Double.parseDouble(listOfCountries.get(y).get(4));
-            intValue = Double.toString(value);
+            value =Integer.parseInt(worldwideInfo.get(4)) + Integer.parseInt(listOfCountries.get(y).get(4));
+            intValue = String.valueOf(value);
             worldwideInfo.set(4,intValue);
         }
 
@@ -1557,7 +1571,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             for (int j = 0; j < tempList.size(); j++) {
                 Boolean pass = true;
                 for (int k = 0; k < tempList.size(); k++) {
-                    if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
+                    if (Integer.parseInt(tempList.get(j).get(settingsCurrent)) < Integer.parseInt(tempList.get(k).get(settingsCurrent))) {
                         pass = false;
                     }
                 }
