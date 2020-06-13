@@ -94,13 +94,13 @@
         <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="0dip"
-            android:layout_weight="0.15">
+            android:layout_weight="0.1">
         </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="0dip"
-            android:layout_weight="0.8">
+            android:layout_weight="0.85">
 
             <LinearLayout
                 android:id = "@+id/overview_box"
@@ -124,7 +124,7 @@
 
                     <LinearLayout
                         android:layout_width="375dp"
-                        android:layout_height="500dp"
+                        android:layout_height="550dp"
                         android:background="@color/quantum_amber50"
                         android:gravity="center_horizontal"
                         android:orientation="vertical">
@@ -139,14 +139,14 @@
                             />
 
                         <TextView
-                                android:id="@+id/overview_title"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:gravity="center"
-                                android:text="Covid-19 country total cases: "
-                                android:textSize="18sp"
-                                android:textStyle="normal"
+                            android:id="@+id/overview_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="Covid-19 country total cases: "
+                            android:textSize="18sp"
+                            android:textStyle="normal"
                             />
                         <LinearLayout
                             android:id = "@+id/overview_date_layout"
@@ -175,6 +175,16 @@
                                 android:tag="region"
                                 />
                         </LinearLayout>
+                        <TextView
+                            android:id="@+id/worldwide_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="@string/test"
+                            android:textSize="18sp"
+                            android:textStyle="normal"
+                            />
                         <TextView
                             android:id="@+id/overview_0"
                             android:layout_width="wrap_content"
@@ -335,7 +345,35 @@
                             android:textSize="18sp"
                             android:textStyle="normal"
                             />
-
+                        <View
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+                        <LinearLayout
+                            android:layout_width="fill_parent"
+                            android:layout_height="32dp"
+                            android:gravity="bottom"
+                            android:layout_gravity="end">
+                            <RelativeLayout
+                                android:layout_width="0dip"
+                                android:layout_height="fill_parent"
+                                android:layout_weight="0.15">
+                                <ImageButton
+                                    android:id="@+id/overview_left_button"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:background="@drawable/myimage"
+                                    android:onClick="overviewLeft"
+                                    />
+                            </RelativeLayout>
+                            <ImageButton
+                                android:id="@+id/overview_right_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/myimage"
+                                android:onClick="overviewRight"
+                                />
+                        </LinearLayout>
                     </LinearLayout>
                 </RelativeLayout>
                 <RelativeLayout
@@ -348,205 +386,207 @@
 
     </LinearLayout>
 
-   <LinearLayout
-       android:layout_width="fill_parent"
-       android:layout_height="fill_parent"
-       android:orientation="vertical">
-       <RelativeLayout
-           android:layout_width="fill_parent"
-           android:layout_height="0dip"
-           android:layout_weight="0.15">
-       </RelativeLayout>
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical">
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="0dip"
+            android:layout_weight="0.15">
+        </RelativeLayout>
 
-       <RelativeLayout
-           android:layout_width="fill_parent"
-           android:layout_height="0dip"
-           android:layout_weight="0.8">
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="0dip"
+            android:layout_weight="0.8">
 
-           <LinearLayout
-               android:id = "@+id/text_box"
-               android:layout_width="match_parent"
-               android:layout_height="match_parent"
-               android:visibility="gone"
-               android:orientation="horizontal"
-               android:gravity="center">
+            <LinearLayout
+                android:id = "@+id/text_box"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone"
+                android:orientation="horizontal"
+                android:gravity="center">
 
-               <RelativeLayout
-                   android:layout_width="0dip"
-                   android:layout_height="fill_parent"
-                   android:layout_weight="0.05"></RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="0dip"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="0.05">
 
-               <RelativeLayout
-                   android:layout_width="0dip"
-                   android:layout_height="fill_parent"
-                   android:layout_weight="0.9">
-                   <LinearLayout
-                       android:layout_width="375dp"
-                       android:layout_height="500dp"
-                       android:background="@color/white"
-                       android:gravity="center_horizontal"
-                       android:orientation="vertical">
+                </RelativeLayout>
 
-                       <ImageButton
-                           android:id="@+id/info_close_button"
-                           android:layout_width="wrap_content"
-                           android:layout_height="wrap_content"
-                           android:layout_gravity="top|end"
-                           android:background="@drawable/myimage"
-                           android:onClick="toggleInfo"
-                           />
+                <RelativeLayout
+                    android:layout_width="0dip"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="0.9">
+                    <LinearLayout
+                        android:layout_width="375dp"
+                        android:layout_height="500dp"
+                        android:background="@color/white"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
 
-                       <TextView
-                           android:id="@+id/info_name"
-                           android:layout_width="wrap_content"
-                           android:layout_height="wrap_content"
-                           android:layout_gravity="center"
-                           android:gravity="center"
-                           android:text="@string/test"
-                           android:textSize="18sp"
-                           android:textStyle="normal"
-                           />
-                       <TextView
-                           android:id="@+id/info_aqi"
-                           android:layout_width="wrap_content"
-                           android:layout_height="wrap_content"
-                           android:layout_gravity="center"
-                           android:gravity="center"
-                           android:text="@string/test"
-                           android:textSize="18sp"
-                           android:textStyle="normal"
-                           />
-                       <TextView
-                           android:id="@+id/info_uv"
-                           android:layout_width="wrap_content"
-                           android:layout_height="wrap_content"
-                           android:layout_gravity="center"
-                           android:gravity="center"
-                           android:text="@string/test"
-                           android:textSize="18sp"
-                           android:textStyle="normal"
-                           />
-                       <LinearLayout
-                           android:id = "@+id/date_display_layout"
-                           android:layout_width="375dp"
-                           android:layout_height="23dp"
-                           android:background="@color/white"
-                           android:gravity="center"
-                           android:orientation="horizontal">
-                           <TextView
-                               android:id="@+id/date_view"
-                               android:layout_width="wrap_content"
-                               android:layout_height="wrap_content"
-                               android:layout_gravity="center"
-                               android:gravity="center"
-                               android:text="Covid-19 total cases: "
-                               android:textSize="18sp"
-                               android:textStyle="normal"
-                               />
-                           <ImageButton
-                               android:id="@+id/info_date_button"
-                               android:layout_width="23dp"
-                               android:layout_height="23dp"
-                               android:background="@drawable/myimage"
-                               android:onClick="toggleDate"
-                               android:contentDescription="Button"
-                               android:tag="region"
-                               android:visibility="gone"
-                               />
-                       </LinearLayout>
+                        <ImageButton
+                            android:id="@+id/info_close_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="top|end"
+                            android:background="@drawable/myimage"
+                            android:onClick="toggleInfo"
+                            />
 
-                       <LinearLayout
-                           android:layout_width="375dp"
-                           android:layout_height="23dp"
-                           android:background="@color/white"
-                           android:gravity="center"
-                           android:orientation="horizontal">
+                        <TextView
+                            android:id="@+id/info_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="@string/test"
+                            android:textSize="18sp"
+                            android:textStyle="normal"
+                            />
+                        <TextView
+                            android:id="@+id/info_aqi"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="@string/test"
+                            android:textSize="18sp"
+                            android:textStyle="normal"
+                            />
+                        <TextView
+                            android:id="@+id/info_uv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="@string/test"
+                            android:textSize="18sp"
+                            android:textStyle="normal"
+                            />
+                        <LinearLayout
+                            android:id = "@+id/date_display_layout"
+                            android:layout_width="375dp"
+                            android:layout_height="23dp"
+                            android:background="@color/white"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:id="@+id/date_view"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:text="Covid-19 total cases: "
+                                android:textSize="18sp"
+                                android:textStyle="normal"
+                                />
+                            <ImageButton
+                                android:id="@+id/info_date_button"
+                                android:layout_width="23dp"
+                                android:layout_height="23dp"
+                                android:background="@drawable/myimage"
+                                android:onClick="toggleDate"
+                                android:contentDescription="Button"
+                                android:tag="region"
+                                android:visibility="gone"
+                                />
+                        </LinearLayout>
 
-                           <TextView
-                               android:id="@+id/region_name"
-                               android:layout_width="wrap_content"
-                               android:layout_height="wrap_content"
-                               android:layout_gravity="center"
-                               android:gravity="center"
-                               android:text="@string/test"
-                               android:textSize="18sp"
-                               android:textStyle="normal"
-                               />
+                        <LinearLayout
+                            android:layout_width="375dp"
+                            android:layout_height="23dp"
+                            android:background="@color/white"
+                            android:gravity="center"
+                            android:orientation="horizontal">
 
-                           <ImageButton
-                               android:id="@+id/region_detailed_button"
-                               android:layout_width="23dp"
-                               android:layout_height="23dp"
-                               android:background="@drawable/myimage"
-                               android:onClick="toggleAdditional"
-                               android:contentDescription="Button"
-                               android:tag="region"
-                               android:visibility="gone"
-                               />
+                            <TextView
+                                android:id="@+id/region_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:text="@string/test"
+                                android:textSize="18sp"
+                                android:textStyle="normal"
+                                />
 
-                       </LinearLayout>
+                            <ImageButton
+                                android:id="@+id/region_detailed_button"
+                                android:layout_width="23dp"
+                                android:layout_height="23dp"
+                                android:background="@drawable/myimage"
+                                android:onClick="toggleAdditional"
+                                android:contentDescription="Button"
+                                android:tag="region"
+                                android:visibility="gone"
+                                />
 
-                       <TextView
-                           android:id="@+id/region_cases"
-                           android:layout_width="wrap_content"
-                           android:layout_height="wrap_content"
-                           android:layout_gravity="center"
-                           android:gravity="center"
-                           android:text="@string/test"
-                           android:textSize="18sp"
-                           android:textStyle="normal"
-                           />
-                       <LinearLayout
-                           android:layout_width="375dp"
-                           android:layout_height="23dp"
-                           android:background="@color/white"
-                           android:gravity="center"
-                           android:orientation="horizontal">
+                        </LinearLayout>
 
-                           <TextView
-                               android:id="@+id/country_name"
-                               android:layout_width="wrap_content"
-                               android:layout_height="wrap_content"
-                               android:layout_gravity="center"
-                               android:gravity="center"
-                               android:text="@string/test"
-                               android:textSize="18sp"
-                               android:textStyle="normal"
-                               />
+                        <TextView
+                            android:id="@+id/region_cases"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="@string/test"
+                            android:textSize="18sp"
+                            android:textStyle="normal"
+                            />
+                        <LinearLayout
+                            android:layout_width="375dp"
+                            android:layout_height="23dp"
+                            android:background="@color/white"
+                            android:gravity="center"
+                            android:orientation="horizontal">
 
-                           <ImageButton
-                               android:id="@+id/country_detailed_button"
-                               android:layout_width="23dp"
-                               android:layout_height="23dp"
-                               android:background="@drawable/myimage"
-                               android:onClick="toggleAdditional"
-                               android:tag="country"
-                               android:contentDescription="Button"
-                               android:visibility="gone"
-                               />
-                       </LinearLayout>
+                            <TextView
+                                android:id="@+id/country_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:text="@string/test"
+                                android:textSize="18sp"
+                                android:textStyle="normal"
+                                />
 
-                       <TextView
-                           android:id="@+id/country_cases"
-                           android:layout_width="wrap_content"
-                           android:layout_height="wrap_content"
-                           android:layout_gravity="center"
-                           android:gravity="center"
-                           android:text="@string/test"
-                           android:textSize="18sp"
-                           android:textStyle="normal"
-                           />
-                   </LinearLayout>
-               </RelativeLayout>
-               <RelativeLayout
-                   android:layout_width="0dip"
-                   android:layout_height="fill_parent"
-                   android:layout_weight="0.05">
-               </RelativeLayout>
-           </LinearLayout>
-       </RelativeLayout>
+                            <ImageButton
+                                android:id="@+id/country_detailed_button"
+                                android:layout_width="23dp"
+                                android:layout_height="23dp"
+                                android:background="@drawable/myimage"
+                                android:onClick="toggleAdditional"
+                                android:tag="country"
+                                android:contentDescription="Button"
+                                android:visibility="gone"
+                                />
+                        </LinearLayout>
 
-   </LinearLayout>
+                        <TextView
+                            android:id="@+id/country_cases"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:text="@string/test"
+                            android:textSize="18sp"
+                            android:textStyle="normal"
+                            />
+                    </LinearLayout>
+                </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="0dip"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="0.05">
+                </RelativeLayout>
+            </LinearLayout>
+        </RelativeLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -719,100 +759,100 @@
         </RelativeLayout>
 
         <RelativeLayout
-        android:layout_width="0dip"
-        android:layout_height="fill_parent"
-        android:layout_weight = "0.8">
+            android:layout_width="0dip"
+            android:layout_height="fill_parent"
+            android:layout_weight = "0.8">
 
             <LinearLayout
-            android:layout_width="350dp"
-            android:layout_height="270dp"
-            android:background="@color/quantum_grey"
-            android:gravity="center_horizontal"
-            android:orientation="vertical">
+                android:layout_width="350dp"
+                android:layout_height="270dp"
+                android:background="@color/quantum_grey"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
-            <ImageButton
-                android:id="@+id/additional_close_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="top|end"
-                android:background="@drawable/myimage"
-                android:onClick="toggleAdditional"
-                android:tag = "close"
-                />
+                <ImageButton
+                    android:id="@+id/additional_close_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:background="@drawable/myimage"
+                    android:onClick="toggleAdditional"
+                    android:tag = "close"
+                    />
 
-            <TextView
-                android:id="@+id/blank_space"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:textSize="18sp"
-                android:textStyle="normal"
-                />
-            <TextView
-                android:id="@+id/blank_space1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:textSize="18sp"
-                android:textStyle="normal"
-                />
+                <TextView
+                    android:id="@+id/blank_space"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    />
+                <TextView
+                    android:id="@+id/blank_space1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    />
 
-            <TextView
-                android:id="@+id/additional_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/test"
-                android:textSize="18sp"
-                android:textStyle="normal"
-                />
+                <TextView
+                    android:id="@+id/additional_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/test"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    />
 
-            <TextView
-                android:id="@+id/additional_total"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/test"
-                android:textSize="18sp"
-                android:textStyle="normal"
-                />
+                <TextView
+                    android:id="@+id/additional_total"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/test"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    />
 
-            <TextView
-                android:id="@+id/additional_active"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/test"
-                android:textSize="18sp"
-                android:textStyle="normal"
-                />
+                <TextView
+                    android:id="@+id/additional_active"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/test"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    />
 
-            <TextView
-                android:id="@+id/additional_death"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/test"
-                android:textSize="18sp"
-                android:textStyle="normal"
-                />
+                <TextView
+                    android:id="@+id/additional_death"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/test"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    />
 
-            <TextView
-                android:id="@+id/additional_recovered"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/test"
-                android:textSize="18sp"
-                android:textStyle="normal"
-                />
+                <TextView
+                    android:id="@+id/additional_recovered"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/test"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    />
             </LinearLayout>
         </RelativeLayout>
         <RelativeLayout

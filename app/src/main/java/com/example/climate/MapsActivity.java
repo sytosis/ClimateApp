@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.Image;
 import android.opengl.GLException;
 import android.os.Bundle;
 import android.os.Environment;
@@ -130,6 +131,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     List<List<String>> listOfCountries = new ArrayList<>();
     List<List<String>> listOfLocationsTemp = new ArrayList<>();
     List<List<String>> listOfCountriesTemp = new ArrayList<>();
+    List<String> worldwideInfo = new ArrayList<>();
+    List<String> worldwideInfoTemp = new ArrayList<>();
     private GoogleMap mMap;
     LatLng tapMark;
     Marker tapMarker;
@@ -151,6 +154,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     String currentDate;
     String currentDateText;
     int settingsCurrent = 1;
+    int overviewPage = 0;
     boolean loading = false;
     boolean onOverview = false;
     boolean onInfo = false;
@@ -397,6 +401,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         TextView dateText = findViewById(R.id.overview_date);
         if (overviewBox.getVisibility() == LinearLayout.VISIBLE) {
             overviewBox.setVisibility(LinearLayout.GONE);
+            //resets the overview to defaults
+            overviewPage = 0;
+            listOfCountriesTemp.clear();
             //re-enables scrolling
             if (mMap != null) {
                 mMap.getUiSettings().setScrollGesturesEnabled(true);
@@ -417,35 +424,70 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mMap.getUiSettings().setRotateGesturesEnabled(false);
                 disableInfoCLick = true;
             }
-            List<List<String>> tempList = new ArrayList(listOfCountries);
+            refreshOverview();
             dateText.setText(currentDateText);
-            int i = 0;
-            while (i < 16) {
-                for (int j = 0; j < tempList.size(); j++) {
-                    Boolean pass = true;
-                    for (int k = 0; k < tempList.size(); k++) {
-                        if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
-                            pass = false;
-                        }
-
-                    }
-                    if (pass) {
-                        String textID = "overview_" + i;
-                        int resID = getResources().getIdentifier(textID, "id", getPackageName());
-                        TextView textView = findViewById(resID);
-                        System.out.println(tempList.get(j) + " IS THE " + i + " input");
-                        if (textView != null) {
-                            textView.setText(tempList.get(j).get(0) + ": " + tempList.get(j).get(settingsCurrent));
-                        }
-
-
-                        tempList.remove(j);
-                        i++;
-                    }
-                }
-            }
             overviewBox.setVisibility(LinearLayout.VISIBLE);
         }
+    }
+
+    //refreshes the overview page for updated info
+    public void refreshOverview() {
+        List<List<String>> overviewList = new ArrayList<>();
+        List<String> worldwideList = new ArrayList<>();
+        if (listOfCountriesTemp.isEmpty()) {
+            overviewList = listOfCountries;
+            worldwideList = worldwideInfo;
+        } else {
+            overviewList = listOfCountriesTemp;
+            worldwideList = worldwideInfoTemp;
+        }
+        //sets default buttons
+        ImageButton buttonRight = findViewById(R.id.overview_right_button);
+        buttonRight.setVisibility(ImageButton.VISIBLE);
+        ImageButton buttonLeft = findViewById(R.id.overview_left_button);
+        buttonLeft.setVisibility(ImageButton.VISIBLE);
+        //display worldwide data first
+        TextView textView = findViewById(R.id.worldwide_text);
+        if (textView != null) {
+            textView.setText(worldwideList.get(0) + " cases: " + worldwideList.get(settingsCurrent));
+        }
+        int i = 0;
+        while (i < 16) {
+            String textID = "overview_" + i;
+            int resID = getResources().getIdentifier(textID, "id", getPackageName());
+            textView = findViewById(resID);
+            int j = i + (overviewPage * 16);
+            if (j == 0) {
+                //disable left button if its on the first page
+                buttonLeft.setVisibility(ImageButton.GONE);
+            }
+            if (overviewList.size() > j) {
+                if (textView != null) {
+                    textView.setText((j + 1) + ":" + overviewList.get(j).get(0) + ": " + overviewList.get(j).get(settingsCurrent));
+                }
+            } else {
+                //disable right button if its on the last page
+                buttonRight.setVisibility(ImageButton.GONE);
+                if (textView != null) {
+                    textView.setText("");
+                }
+            }
+            i++;
+        }
+    }
+
+    //overview left button
+    public void overviewLeft(View view) {
+        if (overviewPage != 0) {
+            overviewPage -= 1;
+            refreshOverview();
+        }
+    }
+
+    //overview right button
+    public void overviewRight(View view) {
+        overviewPage += 1;
+        refreshOverview();
     }
 
     //toggles date with specified selection
@@ -485,6 +527,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         } else if (findViewById(view.getId()) == findViewById(R.id.settings_select_active)) {
             settingsCurrent = 4;
             overviewLayout.setText("Covid-19 country active cases: ");
+        }
+        //sort the list of countries based on size dependent on the settings
+        List<List<String>> tempList = new ArrayList(listOfCountries);
+        List<List<String>> overviewList = new ArrayList<>();
+        int i = 0;
+        int listTotalSize = tempList.size() - 1;
+        while (i < listTotalSize) {
+            for (int j = 0; j < tempList.size(); j++) {
+                Boolean pass = true;
+                for (int k = 0; k < tempList.size(); k++) {
+                    if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
+                        pass = false;
+                    }
+                }
+                if (pass) {
+                    overviewList.add(tempList.get(j));
+                    tempList.remove(j);
+                    i++;
+                }
+            }
         }
     }
     //code for when the user picks a date
@@ -754,13 +816,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
         //setup worldwide Data
-        List<String> worldwideInfo = new ArrayList<>();
-        worldwideInfo.add("Worldwide");
-        worldwideInfo.add("0");
-        worldwideInfo.add("0");
-        worldwideInfo.add("0");
-        worldwideInfo.add("0");
-        listOfCountriesTemp.add(worldwideInfo);
+        worldwideInfoTemp = new ArrayList<>();
+        worldwideInfoTemp.add("Worldwide");
+        worldwideInfoTemp.add("0");
+        worldwideInfoTemp.add("0");
+        worldwideInfoTemp.add("0");
+        worldwideInfoTemp.add("0");
         //setting up country data through list of locations done above
         for (int i = 0; i < listOfLocationsTemp.size(); ++i) {
             String getCountry[] = listOfLocationsTemp.get(i).get(0).split(",");
@@ -826,70 +887,55 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         System.out.println("Calculating worldwide info now");
         for (int y = 1; y < listOfCountriesTemp.size(); ++y) {
             //confirmed
-            double value = Double.parseDouble(listOfCountriesTemp.get(0).get(1)) + Double.parseDouble(listOfCountriesTemp.get(y).get(1));
+            double value = Double.parseDouble(worldwideInfoTemp.get(1)) + Double.parseDouble(listOfCountriesTemp.get(y).get(1));
             String intValue = Double.toString(value);
             System.out.println("Adding " + intValue + " Cases from ");
-            listOfCountriesTemp.get(0).set(1,intValue);
+            worldwideInfoTemp.set(1,intValue);
 
             //deaths
-            value = Double.parseDouble(listOfCountriesTemp.get(0).get(2)) + Double.parseDouble(listOfCountriesTemp.get(y).get(2));
+            value = Double.parseDouble(worldwideInfoTemp.get(2)) + Double.parseDouble(listOfCountriesTemp.get(y).get(2));
             intValue = Double.toString(value);
-            listOfCountriesTemp.get(0).set(2,intValue);
+            worldwideInfoTemp.set(2,intValue);
 
             //recovered
-            value = Double.parseDouble(listOfCountriesTemp.get(0).get(3)) + Double.parseDouble(listOfCountriesTemp.get(y).get(3));
+            value = Double.parseDouble(worldwideInfoTemp.get(3)) + Double.parseDouble(listOfCountriesTemp.get(y).get(3));
             intValue = Double.toString(value);
-            listOfCountriesTemp.get(0).set(3,intValue);
+            worldwideInfoTemp.set(3,intValue);
 
             //active
-            value = Double.parseDouble(listOfCountriesTemp.get(0).get(4)) + Double.parseDouble(listOfCountriesTemp.get(y).get(4));
+            value = Double.parseDouble(worldwideInfoTemp.get(4)) + Double.parseDouble(listOfCountriesTemp.get(y).get(4));
             intValue = Double.toString(value);
-            listOfCountriesTemp.get(0).set(4,intValue);
+            worldwideInfoTemp.set(4,intValue);
         }
-        System.out.println(listOfCountriesTemp.get(0));
+        //sort the list of countries based on size
+        List<List<String>> tempList = new ArrayList(listOfCountriesTemp);
+        List<List<String>> overviewList = new ArrayList<>();
+        int i = 0;
+        int listTotalSize = tempList.size() - 1;
+        while (i < listTotalSize) {
+            for (int j = 0; j < tempList.size(); j++) {
+                Boolean pass = true;
+                for (int k = 0; k < tempList.size(); k++) {
+                    if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
+                        pass = false;
+                    }
+                }
+                if (pass) {
+                    overviewList.add(tempList.get(j));
+                    tempList.remove(j);
+                    i++;
+                }
+            }
+        }
+
+        listOfCountriesTemp = overviewList;
         toggleDateClick(false);
         //main setup of date picker done, below is to reassign based on which button clicked it.
         if (onInfo) {
             changeInfo("0",false,true);
         } else if (onOverview) {
-            //reset the textviews to remove previous data on text
-            int reset = 0;
-            while (reset < 16) {
-                String textID = "overview_" + reset;
-                int resID = getResources().getIdentifier(textID, "id", getPackageName());
-                TextView textView = findViewById(resID);
-                textView.setText("");
-                reset++;
-            }
-
-            TextView dateText = findViewById(R.id.overview_date);
-            List<List<String>> tempList = new ArrayList(listOfCountriesTemp);
-            dateText.setText(picker.getDayOfMonth() + "/" + (picker.getMonth() + 1) + "/" + picker.getYear());
-            int i = 0;
-            while (i < 16 && tempList.size() != 0) {
-                for (int j = 0; j < tempList.size(); j++) {
-                    Boolean pass = true;
-                    for (int k = 0; k < tempList.size(); k++) {
-                        if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
-                            pass = false;
-                        }
-                    }
-                    if (pass) {
-                        String textID = "overview_" + i;
-                        int resID = getResources().getIdentifier(textID, "id", getPackageName());
-                        TextView textView = findViewById(resID);
-                        System.out.println(tempList.get(j) + " IS THE " + i + " input");
-                        //ensures it finds the text view
-                        if (textView != null) {
-                            textView.setText(tempList.get(j).get(0) + ": " + tempList.get(j).get(settingsCurrent));
-                        }
-
-                        tempList.remove(j);
-                        i++;
-                    }
-                }
-            }
-
+            overviewPage = 0;
+            refreshOverview();
         }
 
 
@@ -1091,6 +1137,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
 
         }
+        String overviewPosition = "";
         //searches countries cases here
         for (int i = 0; i < countriesList.size(); ++i) {
             //gets country cases
@@ -1103,6 +1150,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (tapLocationCountry.contains(listCountry)) {
                     android.util.Log.i("list country found", listCountryList.get(0).toString());
                     countryList = listCountryList;
+                    overviewPosition = (i+1) + "/" + countriesList.size();
                 }
             }
 
@@ -1177,7 +1225,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             country_name.setText("Country: " + countryList.get(0));
             country_cases.setText("Country Cases: " + countryList.get(settingsCurrent));
             //populate the additional country cases
-            additionalCountryName = countryList.get(0).toString();
+            additionalCountryName = countryList.get(0).toString() + "(" + overviewPosition + ")";
             additionalCountryCases = countryList.get(1).toString();
             additionalCountryDeaths = countryList.get(2).toString();
             additionalCountryRecovered = countryList.get(3).toString();
@@ -1406,13 +1454,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
         //setup worldwide Data
-        List<String> worldwideInfo = new ArrayList<>();
+        worldwideInfo = new ArrayList<>();
         worldwideInfo.add("Worldwide");
         worldwideInfo.add("0");
         worldwideInfo.add("0");
         worldwideInfo.add("0");
         worldwideInfo.add("0");
-        listOfCountries.add(worldwideInfo);
         //setting up country data through list of locations done above
         for (int i = 0; i < listOfLocations.size(); ++i) {
             String getCountry[] = listOfLocations.get(i).get(0).split(",");
@@ -1480,30 +1527,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         System.out.println("Calculating worldwide info now");
         for (int y = 1; y < listOfCountries.size(); ++y) {
             //confirmed
-            double value = Double.parseDouble(listOfCountries.get(0).get(1)) + Double.parseDouble(listOfCountries.get(y).get(1));
+            double value = Double.parseDouble(worldwideInfo.get(1)) + Double.parseDouble(listOfCountries.get(y).get(1));
             String intValue = Double.toString(value);
             System.out.println("Adding " + intValue + " Cases from ");
-            listOfCountries.get(0).set(1,intValue);
+            worldwideInfo.set(1,intValue);
 
             //deaths
-            value = Double.parseDouble(listOfCountries.get(0).get(2)) + Double.parseDouble(listOfCountries.get(y).get(2));
+            value = Double.parseDouble(worldwideInfo.get(2)) + Double.parseDouble(listOfCountries.get(y).get(2));
             intValue = Double.toString(value);
-            listOfCountries.get(0).set(2,intValue);
+            worldwideInfo.set(2,intValue);
 
             //recovered
-            value = Double.parseDouble(listOfCountries.get(0).get(3)) + Double.parseDouble(listOfCountries.get(y).get(3));
+            value = Double.parseDouble(worldwideInfo.get(3)) + Double.parseDouble(listOfCountries.get(y).get(3));
             intValue = Double.toString(value);
-            listOfCountries.get(0).set(3,intValue);
+            worldwideInfo.set(3,intValue);
 
             //active
-            value = Double.parseDouble(listOfCountries.get(0).get(4)) + Double.parseDouble(listOfCountries.get(y).get(4));
+            value = Double.parseDouble(worldwideInfo.get(4)) + Double.parseDouble(listOfCountries.get(y).get(4));
             intValue = Double.toString(value);
-            listOfCountries.get(0).set(4,intValue);
+            worldwideInfo.set(4,intValue);
         }
-        System.out.println(listOfCountries.get(0));
-        System.out.println(listOfCountries);
-        for(int i = 0; i < listOfCountries.size(); i++) {
-            System.out.println(listOfCountries.get(i));
+
+        //sort the list of countries based on size
+        List<List<String>> tempList = new ArrayList(listOfCountries);
+        List<List<String>> overviewList = new ArrayList<>();
+        int i = 0;
+        int listTotalSize = tempList.size() - 1;
+        while (i < listTotalSize) {
+            for (int j = 0; j < tempList.size(); j++) {
+                Boolean pass = true;
+                for (int k = 0; k < tempList.size(); k++) {
+                    if (Double.parseDouble(tempList.get(j).get(settingsCurrent)) < Double.parseDouble(tempList.get(k).get(settingsCurrent))) {
+                        pass = false;
+                    }
+                }
+                if (pass) {
+                    overviewList.add(tempList.get(j));
+                    tempList.remove(j);
+                    i++;
+                }
+            }
+        }
+
+        listOfCountries = overviewList;
+        for(int j = 0; j < listOfCountries.size(); j++) {
+            System.out.println(listOfCountries.get(j));
         }
     }
 
