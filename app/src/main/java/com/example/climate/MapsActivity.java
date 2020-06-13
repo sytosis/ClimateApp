@@ -814,6 +814,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         int val = (int) Math.round(Double.valueOf(listCsv.get(i)));
                         listCsv.set(i,String.valueOf(val));
                         i++;
+                        System.out.println(listCsv);
                     }
                     listOfLocationsTemp.add(listCsv);
                 }
@@ -892,7 +893,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         System.out.println(listOfCountriesTemp);
         System.out.println("Calculating worldwide info now");
-        for (int y = 1; y < listOfCountriesTemp.size(); ++y) {
+        for (int y = 0; y < listOfCountriesTemp.size(); ++y) {
             //confirmed
             int value = Integer.parseInt(worldwideInfoTemp.get(1)) + Integer.parseInt(listOfCountriesTemp.get(y).get(1));
             String intValue = String.valueOf(value);
@@ -1539,7 +1540,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
         }
         System.out.println("Calculating worldwide info now");
-        for (int y = 1; y < listOfCountries.size(); ++y) {
+        for (int y = 0; y < listOfCountries.size(); ++y) {
             //confirmed
             int value = Integer.parseInt(worldwideInfo.get(1)) + Integer.parseInt(listOfCountries.get(y).get(1));
             String intValue = String.valueOf(value);
