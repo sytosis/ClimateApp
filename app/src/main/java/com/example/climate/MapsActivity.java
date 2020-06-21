@@ -452,11 +452,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             textView.setText(worldwideList.get(0) + " cases: " + worldwideList.get(settingsCurrent));
         }
         int i = 0;
-        while (i < 16) {
+        while (i < 15) {
             String textID = "overview_" + i;
             int resID = getResources().getIdentifier(textID, "id", getPackageName());
             textView = findViewById(resID);
-            int j = i + (overviewPage * 16);
+            int j = i + (overviewPage * 15);
             if (j == 0) {
                 //disable left button if its on the first page
                 buttonLeft.setVisibility(ImageButton.GONE);
@@ -1053,7 +1053,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 } else {
                     locationName = loc;
                 }
-                JSONArray fullNameArray = actualLoc.getJSONArray("results").getJSONObject(1).getJSONArray("address_components");
+                JSONArray fullNameArray = actualLoc.getJSONArray("results").getJSONObject(0).getJSONArray("address_components");
+                //if the country is china, it needs to use index 1 or the code will break.
+                if (fullNameArray.toString().toLowerCase().contains("china")) {
+                    System.out.println("JSONARRAY fixing here");
+                    fullNameArray = actualLoc.getJSONArray("results").getJSONObject(1).getJSONArray("address_components");
+                }
                 String fullNameSearch = "";
                 for (int i = 0; i < fullNameArray.length(); i++) {
                     JSONObject namePart = fullNameArray.getJSONObject(i);
@@ -1062,12 +1067,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         fullNameSearch += namePart.get("long_name");
                         fullNameSearch += ",";
                     }
-
                 }
                 fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
                 String[] tapLocationName = fullNameSearch.split(",");
                 //remove the event where the last part of the compound code is some numbers or else it wont be able to search the last index of code,
-                if (!tapLocationName[tapLocationName.length - 1].matches("[a-zA-Z]+")) {
+                if (tapLocationName[tapLocationName.length - 1].matches(".*\\d.*")) {
                     tapLocationName[tapLocationName.length - 1] ="";
                     fullNameSearch = String.join(",", tapLocationName);
                     fullNameSearch = fullNameSearch.substring(0,fullNameSearch.length() - 1);
@@ -1445,6 +1449,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     //gets rid of any unintended quotation marks at the end of a country name for the second time because sometimes theres two
                     if (!Character.isLetter(listCsv.get(0).charAt(listCsv.get(0).length() - 1))) {
                         listCsv.set(0,listCsv.get(0).substring(0,listCsv.get(0).length() - 1));
+                    }
+
+                    //making hong kong a separate country
+                    if (listCsv.get(0).toLowerCase().contains("hong kong")) {
+                        listCsv.set(0,listCsv.get(0).substring(0,listCsv.get(0).length() - 7));
+                        System.out.println("HONG KONG HERE " + listCsv.get(0));
                     }
 
                     System.out.println(listCsv.toString());
